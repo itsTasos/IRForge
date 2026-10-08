@@ -1,0 +1,37 @@
+name: Windows MinGW
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  build-test:
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up portable MinGW (no Visual Studio tools)
+        shell: pwsh
+        run: |
+          $irforgeArchive=Join-Path $env:RUNNER_TEMP 'w64devkit-x64-2.6.0.7z.exe'
+          Invoke-WebRequest 'https://github.com/skeeto/w64devkit/releases/download/v2.6.0/w64devkit-x64-2.6.0.7z.exe' -OutFile $irforgeArchive
+          $irforgeHash=(Get-FileHash -LiteralPath $irforgeArchive -Algorithm SHA256).Hash
+          if($irforgeHash -ne 'bb212f0012a9324b8cf4104a76c07199d9c17607b4c5755632108d0432359beb') {throw 'Toolchain checksum mismatch'}
+          $irforgeToolchain=Join-Path $env:RUNNER_TEMP 'irforge-toolchain'
+          7z x $irforgeArchive "-o$irforgeToolchain" -y
+          if($LASTEXITCODE) {throw 'Toolchain extraction failed'}
+          $irforgeBin=Join-Path $irforgeToolchain 'w64devkit/bin'
+          if(!(Test-Path -LiteralPath (Join-Path $irforgeBin 'g++.exe'))) {throw 'Extracted compiler missing'}
+          $irforgeBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Build and run deterministic tests
+        shell: pwsh
+        run: ./scripts/build.ps1 -Configuration ${{ matrix.configuration }}
+      - name: Package CLI and defaults
+        if: matrix.configuration == 'Release'
+        run: cmake --install build/mingw --prefix build/package
+      - uses: actions/upload-artifact@v4
+        if: matrix.configuration == 'Release'
+        with:
+          name: irforge-0.1.0-windows-x64
+          path: build/package/

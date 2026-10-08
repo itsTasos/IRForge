@@ -1,0 +1,16 @@
+[
+  {
+    "schema_version":1,"id":"CORR-001","name":"Office, encoded shell and owned public TCP",
+    "type":"correlation","enabled":true,
+    "requires":["PROC-001","PROC-002","NET-001"],"linkage":"same_process","window_seconds":60,
+    "score":30,"severity":"high",
+    "description":"An Office-launched encoded shell and a public TCP observation share the same verified process generation within 60 seconds. This observed chain does not confirm C2."
+  },
+  {
+    "schema_version":1,"id":"CORR-002","name":"Suspicious lineage and related autorun artifact",
+    "type":"correlation","enabled":true,
+    "requires":["PROC-001","PERS-001"],"linkage":"lineage_path","window_seconds":120,
+    "score":15,"severity":"low",
+    "description":"A Run/RunOnce artifact has the same explicit normalized executable path as a process in a suspicious lineage within 120 seconds. Possible artifact linkage only; Registry writer remains unknown."
+  }
+]

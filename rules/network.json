@@ -1,0 +1,14 @@
+[
+  {
+    "schema_version":1,"id":"NET-001","name":"Script process with observed public TCP endpoint",
+    "enabled":true,"event_type":"tcp_connection_observed",
+    "all":[
+      {"field":"process.name","operator":"in_ci","value":["powershell.exe","pwsh.exe","cmd.exe","wscript.exe","cscript.exe"]},
+      {"field":"network.remote_class","operator":"equals_ci","value":"public"},
+      {"field":"network.state","operator":"equals_ci","value":"established"},
+      {"field":"network.first_snapshot","operator":"equals_ci","value":"false"}
+    ],
+    "score":10,"severity":"informational",
+    "description":"A scripting process was associated with a public remote TCP endpoint snapshot. Public addressing is not malicious by itself; connection direction is unknown."
+  }
+]

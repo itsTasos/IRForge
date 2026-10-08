@@ -1,0 +1,30 @@
+[
+  {
+    "schema_version":1,"id":"PERS-001","name":"New Run or RunOnce autorun value",
+    "enabled":true,"event_type":"registry_value_added",
+    "all":[{"field":"registry.is_run","operator":"equals_ci","value":"true"}],
+    "score":20,"severity":"low",
+    "description":"A new watched Run/RunOnce value was observed after the baseline. Registry writer is unknown."
+  },
+  {
+    "schema_version":1,"id":"PERS-002","name":"Autorun references a user-writable path",
+    "enabled":true,"event_type":["registry_value_added","registry_value_modified"],
+    "all":[
+      {"field":"registry.is_run","operator":"equals_ci","value":"true"},
+      {"field":"registry.user_writable","operator":"equals_ci","value":"true"}
+    ],
+    "score":25,"severity":"medium",
+    "description":"A new or changed autorun references an explicit executable in a commonly user-writable path. Path location is a heuristic, not an ACL check. Writer PID remains unknown."
+  },
+  {
+    "schema_version":1,"id":"PERS-003","name":"Auto-start service references a user-writable path",
+    "enabled":true,"event_type":["registry_value_added","registry_value_modified","registry_key_added"],
+    "all":[
+      {"field":"registry.is_service","operator":"equals_ci","value":"true"},
+      {"field":"registry.service_start","operator":"equals_ci","value":"2"},
+      {"field":"registry.user_writable","operator":"equals_ci","value":"true"}
+    ],
+    "score":35,"severity":"medium",
+    "description":"A new or changed auto-start service references a commonly user-writable executable path. Automatic start alone is not suspicious; Registry writer is unknown."
+  }
+]

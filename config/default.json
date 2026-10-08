@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "process_etw_enabled": true,
+  "network_enabled": true,
+  "network_poll_ms": 1000,
+  "registry_enabled": true,
+  "watch_run_keys": true,
+  "watch_services": true,
+  "correlation_window_seconds": 120,
+  "context_retention_seconds": 300,
+  "queue_capacity": 10000,
+  "max_history_events": 4096,
+  "alert_min_severity": "medium",
+  "log_all_events": true,
+  "capture_command_line": true,
+  "log_directory": "out"
+}

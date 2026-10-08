@@ -1,0 +1,22 @@
+[
+  {
+    "schema_version": 1, "id": "PROC-001", "name": "Office-launched scripting shell",
+    "enabled": true, "event_type": "process_start",
+    "all": [
+      {"field":"process.parent.name","operator":"in_ci","value":["winword.exe","excel.exe","powerpnt.exe","outlook.exe"]},
+      {"field":"process.name","operator":"in_ci","value":["powershell.exe","pwsh.exe","cmd.exe","wscript.exe","cscript.exe"]}
+    ],
+    "score":35, "severity":"medium",
+    "description":"A time-valid Office parent launched a scripting shell. Legitimate automation can produce this behavior."
+  },
+  {
+    "schema_version":1,"id":"PROC-002","name":"Encoded PowerShell invocation",
+    "enabled":true,"event_type":"process_start",
+    "all":[
+      {"field":"process.name","operator":"in_ci","value":["powershell.exe","pwsh.exe"]},
+      {"field":"process.command_line","operator":"contains_any_ci","value":[" -encodedcommand "," -enc "," -e "," -encodedcommand:"]}
+    ],
+    "score":25,"severity":"medium",
+    "description":"PowerShell command line contains an encoded-command indicator; this is context for investigation, not proof of malicious activity."
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {"major": 3, "minor": 26, "patch": 0},
+  "configurePresets": [
+    {
+      "name": "mingw",
+      "displayName": "Windows x64 Release (MinGW, no Visual Studio)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/mingw",
+      "cacheVariables": {"CMAKE_BUILD_TYPE": "Release", "CMAKE_CXX_COMPILER": "g++"}
+    },
+    {
+      "name": "mingw-debug",
+      "displayName": "Windows x64 Debug (MinGW, no Visual Studio)",
+      "inherits": "mingw",
+      "binaryDir": "${sourceDir}/build/mingw-debug",
+      "cacheVariables": {"CMAKE_BUILD_TYPE": "Debug"}
+    }
+  ],
+  "buildPresets": [
+    {"name": "mingw", "configurePreset": "mingw"},
+    {"name": "release", "configurePreset": "mingw"},
+    {"name": "debug", "configurePreset": "mingw-debug"}
+  ],
+  "testPresets": [
+    {"name": "mingw", "configurePreset": "mingw", "output": {"outputOnFailure": true}},
+    {"name": "release", "configurePreset": "mingw", "output": {"outputOnFailure": true}},
+    {"name": "debug", "configurePreset": "mingw-debug", "output": {"outputOnFailure": true}}
+  ]
+}
