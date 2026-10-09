@@ -1,0 +1,7 @@
+# IRForge 1.0.0-dev preview
+
+Extends the v0.1 CLI/replay contract through the roadmap: durable schema-v2 SQLite, native Windows inventory and IOCP files, Event Log/Sysmon, hash/signature/YARA-X, pinned ATT&CK and strict Sigma, baselines/correlations, Qt investigation, audited analyst states/cases, offline reports/exports, opt-in intelligence, visible Windows Service/local IPC, optional mTLS collector and durable metadata spool.
+
+Implemented code and passing local checks are distinct from production acceptance. Signing, online VirusTotal, elevated live Sysmon comparison, two-VM transport, clean-machine MSI upgrade/rollback, service/UAC/reboot and controlled persistence mutation acceptance remain external gates. No malware verdict, kernel coverage, remote execution, file upload or destructive response is claimed. Consult docs/limitations.md.
+
+The release repository and generated packages contain production source/runtime assets, configuration, rules, migrations, schemas, dependency notices and operating documentation. Tests, fixtures, recordings, benchmarks and internal plans/status reports remain local. Production builds default to BUILD_TESTING=OFF and do not require the excluded test directory. Local test builds are still available with scripts/build.ps1 -Tests when the complete local suite is present. CI builds Debug/Release production applications and creates distribution packages; hosted execution has not yet been verified.

@@ -1,80 +1,82 @@
-# IRForge — Lightweight Windows Endpoint Detection & Triage
+# IRForge — Windows endpoint evidence and investigation
 
-IRForge v0.1 is a native C++20, local, read-only Windows 10/11 x64 console monitor. One executable collects ETW process lifecycles, IPv4/IPv6 TCP owner-PID snapshots, and Run/RunOnce/service registry changes. External JSON rules produce explainable, deduplicated incidents with process lineage and carefully qualified artifact correlation. Offline replay uses the same detection and scoring code.
+**IR** means **Incident Response**. **Forge** means a workshop: a place to bring evidence together and turn it into an investigation.
 
-**TCP polling can miss short-lived sockets. Registry notifications do not identify the writer PID. Scores are investigation priorities, not malware probabilities.**
+IRForge 1.0.0-dev is a C++20 Windows 10/11 x64 preview with native collectors, durable SQLite evidence, a separate Qt desktop UI and optional authenticated multi-host collection. It observes and explains activity; it never executes remote commands, uploads files or remediates a host.
 
-```text
-ETW process events     TCP owner-PID tables     Registry notify + typed diff
-        |                      |                          |
-        +----------------------+--------------------------+
-                               |
-                      Bounded event queue
-                               |
-                       Single dispatcher
-                               |
-              Process generations + JSON rule predicates
-                               |
-                 Windowed correlation + risk scoring
-                               |
-                Console + events.jsonl + alerts.jsonl
-                    Health + session metadata
-```
+## Capabilities
 
-Build with Windows x64 MinGW-w64 GCC, CMake 3.26+, Ninja, and Git. **Visual Studio and Microsoft's separately installed Windows SDK are unnecessary**: MinGW supplies the Windows headers and import libraries. This machine already has the working compiler/toolchain under `C:\w64devkit\bin`. The portable [w64devkit 2.6.0 release](https://github.com/skeeto/w64devkit/releases/tag/v2.6.0) is the tested compiler/CMake/Ninja bundle; Git is separate. Nothing needs to be downloaded on this machine to rebuild. Live ETW normally requires an elevated console with tracing privileges. Replay, rules validation and unit tests require no administrator privileges. Linux can compile the portable core/replay; live collectors require Windows. Dependencies are nlohmann/json 3.11.3 and Catch2 3.7.1, fetched once from exact release tags and reused from the build cache. The runtime does not require Python, Catch2, or an internet connection.
+- Native ETW process lifecycle, IPv4/IPv6 TCP snapshots, Registry, IOCP file changes, services/tasks/Startup inventory and Windows Event Log/Sysmon.
+- Source-qualified identities and coverage, SHA-256 hashing, offline embedded PE signatures and constrained YARA-X workers.
+- Explainable rules and correlations, a pinned ATT&CK subset, a documented Sigma subset, opt-in baselines and incident graphs.
+- SQLite migrations, retention, analyst states/notes, cases and immutable incident revision snapshots.
+- Qt investigation pages, local authenticated IPC and HTML/PDF/JSON/CSV/STIX exports with integrity manifests.
+- An optional visible Windows Service, reviewed local IOC feeds, opt-in VirusTotal hash/public-IP lookup and an optional mTLS collector.
+
+The original v0.1 CLI and schema-v1 replay remain compatible. Root `rules` retains its original eight-rule behavior; `rules/internal` explicitly enables the expanded 37-rule pack. The shipped YARA lab marker is an original harmless demonstration pattern, not a malware signature database.
+
+## Build without Visual Studio
+
+Use portable w64devkit 2.6.0 (GCC15), CMake/Ninja and 7-Zip. `scripts/bootstrap.ps1` restores dependencies using pinned versions and SHA-256 checksums. The supported complete application build targets Windows x64.
 
 ```powershell
-# Default: build Release and run all tests with MinGW
-./scripts/build.ps1
-# Optional: independent Debug build, also with MinGW
-./scripts/build.ps1 -Configuration Debug
-# A portable toolchain in a different directory:
-# ./scripts/build.ps1 -ToolchainDirectory D:\Tools\w64devkit
+./scripts/build.ps1 -Configuration Release -ToolchainDirectory C:/w64devkit
+./scripts/build.ps1 -Configuration Debug -ToolchainDirectory C:/w64devkit
+```
 
-# Equivalent direct Release commands, with the toolchain on PATH:
+The release repository contains production source and required assets. Tests, fixtures, recordings, benchmarks and development reports remain local and are excluded from Git and distribution packages. `BUILD_TESTING` defaults to `OFF`; the optional `-Tests` build switch requires the complete separately maintained local test directory. A clean clone builds without that directory.
+
+For direct commands, put `C:/w64devkit/bin` on PATH:
+
+```powershell
+./scripts/bootstrap.ps1
 cmake --preset mingw
 cmake --build --preset release --parallel 4
-ctest --preset release
-
-./build/mingw/irforge.exe --help
-./build/mingw/irforge.exe rules validate --dir rules
-./scripts/run_demo.ps1 -Replay
-# Elevated, authorized Windows test VM:
-./scripts/run_demo.ps1 -DurationSeconds 120
-# Read the newest saved run, or pass -Directory out/<run-folder>:
-./scripts/show_results.ps1
+./scripts/deploy-runtime.ps1
 ```
 
-Output must be a **new or empty directory**. Each run preserves earlier logs by refusing to overwrite them. `scripts/run_demo.ps1` chooses a unique output directory. `Ctrl+C` drains the queue, flushes logs, joins collectors, and stops only this run's uniquely named ETW session. Force-kill, power loss, and console-close deadlines can prevent cleanup. `--allow-degraded` explicitly permits remaining sources to run if initialization or runtime collection fails. Without it, collection failures terminate with a nonzero status. Disabled config sources are visibly marked as reduced coverage. `--quiet` suppresses observations and alerts on stdout; coverage errors still appear on stderr.
+## Run and investigate
 
-The output folder has a protected Windows DACL granting access to the current user, SYSTEM and Administrators. Logs include full command lines and selected registry data, which may contain secrets; keep them private. `capture_command_line=false` disables capture and reduces detection coverage. No telemetry is uploaded; live collection performs no external requests and never writes monitored registry locations, terminates processes, blocks connections, installs persistence, or attempts elevation.
-
-Example external rule (the shipped version includes additional encoded-option spellings):
-
-```json
-{
-  "schema_version": 1,
-  "id": "PROC-002",
-  "name": "Encoded PowerShell invocation",
-  "event_type": "process_start",
-  "all": [
-    {"field":"process.name","operator":"in_ci","value":["powershell.exe","pwsh.exe"]},
-    {"field":"process.command_line","operator":"contains_ci","value":" -encodedcommand "}
-  ],
-  "score":25,
-  "severity":"medium",
-  "description":"Encoded-command indicator; suspicious in context, not proof of malicious activity."
-}
+```powershell
+./build/mingw/irforge.exe version
+./build/mingw/irforge.exe rules validate --dir rules/internal
+./build/mingw/irforge.exe monitor --config config/default.json --rules rules/internal --output out/my-new-session --pipe IRForge.Agent.v1 --allow-degraded
 ```
 
-The suspicious fixture contains an Office parent, an encoded PowerShell child, and a public TCP snapshot owned by that child's creation-time identity. Its contributions are PROC-001 +35, PROC-002 +25, NET-001 +10, and CORR-001 +30, capped at 100. The shell alone produces a high-priority score of 60, and the network chain escalates to critical. The benign notepad fixture has no alert. See [docs/sample-alert.json](docs/sample-alert.json) for an actual replay record, and [docs/implementation-report.md](docs/implementation-report.md) for executed build/test evidence.
+In a second terminal, launch `./build/mingw/IRForgeUI.exe`. A live monitor already serves the local UI pipe. ETW normally requires Windows elevation; denied or disabled sources remain visibly degraded. The original default configuration enables the foundation collectors. Configure additional inventory/Event Log collection, explicit file roots, YARA, baselines and intelligence according to [operations](docs/operations.md). `config/service-msi.json` provides a schema-v2 service configuration with inventory/Event Log enabled and file/YARA/TI/remote disabled by default.
 
-Scores 0–19 are informational, 20–39 low, 40–59 medium, 60–79 high, and 80–100 critical. Distinct active rule IDs contribute once per incident inside the configured correlation window. Alerts emit on the first configured severity threshold and subsequent severity escalation. “Critical” suggests priority investigation, not confirmed compromise. Parent/child and owner-generation evidence supports process linkage. An identical explicit executable path supports only a weak related artifact link: registry writer remains unknown. Nearby unrelated registry changes stay standalone.
+To inspect a stopped recording:
 
-Coverage is limited to user mode, available ETW event versions, TCP polling, current user's loaded hive and HKLM Run/RunOnce in 32/64-bit views, and direct service keys' ImagePath/Start/Type values. Command lines and creation times may be unavailable, protected processes may resist enrichment, brief registry changes can be coalesced, and unknown identities cannot complete the high-confidence network chain. Public addresses, script interpreters, encoded commands, user-directory executables and automatic services all have legitimate uses. There is no packet capture, UDP remote-peer monitoring, DNS attribution, threat intelligence, or production EDR guarantee. Detailed caveats are in [docs/limitations.md](docs/limitations.md).
+```powershell
+./build/mingw/irforge.exe agent serve --db out/my-new-session/irforge.sqlite --rules rules/internal
+# Launch IRForgeUI.exe in a second terminal.
+```
 
-Each output folder contains `events.jsonl` (raw normalized observations), `alerts.jsonl` (incident threshold/escalation snapshots), `monitor-health.json` (last reported source coverage/loss counters), and `session-metadata.json` (mode, configuration, UTC interval and run result). See [reading results and current capabilities](docs/operations.md). A completed run's source health describes that recording, not a still-running monitor. Empty alerts mean no configured rule combination reached the alert threshold; they do not certify the machine clean. Incident expiration is currently maintained in memory and is not appended to the alert log as a resolution record.
+One logical owner opens a database. Use a different `--pipe NAME` for independent sessions. The GUI stays non-elevated; analyst writes require a user-clicked Windows UAC prompt. It offers search, filtering, paging, processes, network, persistence, artifacts, rules, baselines, hosts/cases, intelligence, health and incident timelines/graphs.
 
-Developer references: [architecture](docs/architecture.md), [rule format](docs/rule-format.md), and [testing / supervised VM procedure](docs/testing.md). CI is configured in [.github/workflows/windows.yml](.github/workflows/windows.yml) for MinGW x64 Debug and Release builds and deterministic nonprivileged CTest. CI uses the same portable toolchain release, with its download SHA256 checked. This directory has no Git remote, so no repository-specific CI badge or hosted run result can be supplied yet.
+Results are written to `--output`: `events.jsonl`, compatible `alerts.jsonl`, `monitor-health.json`, `session-metadata.json` and `irforge.sqlite`. SQLite preserves revisions, analyst states, notes, cases and historical evidence.
 
-Contributions should include focused deterministic tests, truthful attribution, and updated limitations. MIT licensed; dependency licenses remain with their respective packages. v0.2 roadmap: file events, optional Sysmon intake, signatures/hashes, YARA, richer Registry/SCM views, incident timelines, and optional HTML reports.
+```powershell
+./build/mingw/irforge.exe replay --events C:/Evidence/recording.jsonl --rules rules/internal --output out/new-replay
+./build/mingw/irforge.exe report --db out/my-new-session/irforge.sqlite --incident ID --format pdf --output out/new-report
+./build/mingw/irforge.exe export events --db out/my-new-session/irforge.sqlite --format json --output out/new-events-export
+./build/mingw/irforge.exe evidence verify --manifest out/new-report/manifest.json
+```
+
+Scores are capped sums of distinct rules, not probabilities. Analyst states `new → investigating → benign/resolved` are manual and audited; observation activity `open/expired` is separate. No incident establishes an automatic clean/infected host verdict. Read coverage, identity, confidence and underlying evidence before drawing conclusions.
+
+## Distribution
+
+Python is required only to generate the MSI and audit dependency licenses. .NET/WiX is required only for MSI generation. None is an endpoint runtime dependency. Applications run offline with the DLLs shipped in the portable ZIP.
+
+```powershell
+./scripts/bootstrap.ps1 -Installer
+python scripts/yara-license-audit.py
+./scripts/package.ps1 -Version 1.0.0-dev
+```
+
+The package script produces a portable ZIP, genuine x64 MSI, SHA-256 checksums and corresponding-source archives in `dist`. The service feature is optional and manual-start. Evidence/configuration survive uninstall. Packages are unsigned until an owner uses `scripts/sign.ps1` with their code-signing certificate.
+
+This is an **unsigned preview**. Local development suites passed 72 cases in Release, Debug and an instrumented build; loopback mTLS checks and a native evidence-to-GUI-to-report demonstration also passed. These are recorded local results, not hosted CI or full operational assurance. Elevated Sysmon equivalence, live VirusTotal, service/UAC/reboot, two-VM deployment and clean-machine MSI upgrade/rollback remain unvalidated.
+
+Read [operations](docs/operations.md), [architecture](docs/architecture.md), [limitations](docs/limitations.md), [privacy](PRIVACY.md), [security](SECURITY.md), [remote deployment](docs/remote.md), [dependency notices](THIRD_PARTY_NOTICES.md) and [release notes](RELEASE_NOTES.md).

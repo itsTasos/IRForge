@@ -1,0 +1,11 @@
+# Security model
+
+IRForge is a visible user-mode Windows lab platform. It observes, correlates and preserves evidence; it cannot resist a local administrator, a compromised OS or hostile kernel code. A risk score is an explainable rule sum, not a probability or malware verdict. Unknown file/Registry actors remain unknown. PID joins require creation-time identity or a trustworthy Sysmon GUID. Remote enrollment binds certificate, agent and host; the collector trusts source-reported observations, not independent endpoint attestation.
+
+The non-elevated GUI uses a private named pipe with remote clients rejected, bounded framing and real token authorization. Writes require an elevated administrator. User-clicked writes launch a visible Windows UAC prompt for a hash-sealed, operation-allowlisted helper request; the GUI stays non-elevated. Clients verify the server belongs to the current account or SYSTEM. No arbitrary SQL, script, remote process execution or response operation is exposed.
+
+JSON, XML, Sigma, notifications, IOC CSV and HTTP inputs have size/depth/row bounds and explicit rejection. SQLite uses parameters, defensive mode, migrations, single-owner locking, one writer, WAL and quotas. YARA runs in own constrained children with a Job Object, restricted inherited handles, memory limits and hard deadlines. File enrichment validates final-handle containment and reports observed changes; it does not promise an atomic immutable snapshot of a file another process can change.
+
+Service installation requires explicit administrator action and a protected Program Files executable. MSI service selection is optional and manual-start. No firewall, Sysmon, audit policy or unrelated service is altered. Collector TLS uses Qt's Windows Schannel backend, verified private CA/hostname, mTLS enrollment, revocation and optional server pinning. XPRESS expansion over 1 MiB is rejected before allocation.
+
+Report issues privately to your deployment owner; no reporting mailbox is configured. Never post private evidence or keys. RELEASE_NOTES.md and docs/limitations.md record the release gates. Signing, clean-VM install/reboot checks and independent security review remain release gates; this preview is unsigned.

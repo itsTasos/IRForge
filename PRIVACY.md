@@ -1,0 +1,9 @@
+# Privacy and operator control
+
+IRForge stores endpoint metadata: process identities and optional command lines; observed TCP endpoints; persistence configuration; explicit watched paths; hashes, offline embedded-signature status and approved YARA matches. Command lines, task XML, Registry data, raw Event Log XML and EVTX can contain sensitive information. Use a fresh private output folder and suitable retention. Raw documents are not copied by monitoring. The snapshot command copies metadata; raw EVTX requires `--include-evtx`.
+
+Online intelligence and remote delivery are disabled by default. VirusTotal lookup sends only an explicitly authorized SHA-256 or public IP through fixed GET endpoints. A hash or IP can still disclose activity. No file-upload implementation exists. API credentials reside in Windows Credential Manager under the executing account; user credentials are not automatically available to LocalSystem. Never pass credentials on a command line. Provider terms and entitlements must permit the intended use.
+
+Optional remote delivery sends enrolled authenticated metadata with command lines, raw Registry values and XML removed. Private addresses are allowed in reviewed local IOC feeds; online lookups reject them. An operator controls the private CA, identities and collector. No remote commands, endpoint file retrieval, remediation, process termination or security-setting changes exist.
+
+Private output ACLs allow the current user, SYSTEM and Administrators. Service data uses SYSTEM/Administrators. Administrative and backup privileges can still expose evidence. GUI reader access requires an explicitly authorized SID. Uninstall preserves evidence and configuration. Own-state reset/disconnect requires confirmation. Exports are private independent evidence copies with SHA-256 manifests; manifests are integrity records, not signed chain-of-custody attestations.

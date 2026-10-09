@@ -1,5 +1,35 @@
 # Architecture and lifecycle
 
+## Integrated v0.2–v1.0 boundaries
+
+```mermaid
+flowchart LR
+  OS[Windows ETW / IPHelper / Registry / IOCP / SCM / Task Scheduler / Event Log] --> Q[Bounded event bus]
+  Q --> D[Identity-aware dispatcher and rules]
+  D --> J[Compatible private JSONL]
+  D --> DB[Single-owner SQLite worker / WAL / migrations]
+  D --> E[Bounded hash / signature / YARA workers]
+  E --> Q
+  DB --> PIPE[SID-authenticated local pipe]
+  PIPE --> UI[Separate non-elevated Qt desktop]
+  UI --> UAC[User-clicked allowlisted UAC broker]
+  UAC --> PIPE
+  DB --> R[HTML / PDF / JSON / CSV / STIX / case ZIP]
+  DB --> S[Optional durable redacted metadata spool]
+  S --> TLS[mTLS / host enrollment / durable ACK]
+  TLS --> C[Collector SQLite / scoped fleet queries]
+```
+
+Schema-v1 records upgrade to provenance-bearing schema-v2 with stable host, unique session and source-record identities. Provider records retain attribution strength; temporal coincidence never establishes a writer. Event Log bookmarks commit with accepted records. Delayed enrichment can revise an incident even when its score does not change. SQLite analyst state is preserved independently from computed activity state, and case creation snapshots exact incident revisions.
+
+The database worker serializes reads/writes, owns a named process mutex and uses WAL/FULL synchronous transactions, foreign keys, defensive mode and quotas. Optional remote spooling uses savepoints so transport failure cannot roll back local evidence. Queues, parser depth, frames, query pages, history, graphs, export sizes and scanner budgets are bounded; health exposes actual depths/drops/errors, storage/WAL size, database request duration, event rate, scan state and TI budgets.
+
+YARA-X runs through its official C API in a persistent child of the current executable. The Windows job enforces one process, 1 GiB memory, kill-on-close and configurable CPU hard cap (`yara.max_cpu_percent`, default20 per worker), with a controller deadline and cancellation. Only approved rule packs are compiled. Hashing checks identity before/after; signature validation is embedded PE and offline/cache-only. Intelligence workers use fixed GET hash/IP endpoints with no upload operation and Credential Manager secrets.
+
+The SCM service reuses the same pipeline and has explicit pending/running/stopping transitions. Protected Program Files binaries and ProgramData evidence are separate. Endpoint IPC rejects remote clients, verifies server identity and authorizes mutations from the actual client token. The UI sends read requests asynchronously and requires a clicked UAC broker for allowed writes; it never elevates the whole GUI. Remote transport uses native Schannel, private CA/hostname validation, enrollment fingerprints, scoped roles, bounded XPRESS bodies, heartbeat and durable sequence ACK. There is no remote command channel.
+
+The foundation details below document the compatible original design; the integrated components extend those boundaries.
+
 The core library holds the event schema, EventBus, configuration, snapshot diff algorithms, process tracker, rules, correlator, risk scorer, JSONL output, metrics and replay. Win32 collectors link into the single CLI. UTF-8 strings replace the plan's suggested internal wstrings: Win32 boundaries convert with strict UTF-16/UTF-8 validation, keeping JSON and portable tests consistent. Related headers are consolidated into `Event.hpp`, `IMonitor.hpp` and `Diff.hpp`; the three native collector implementations remain separate.
 
 Collectors own their threads and handles. ETW owns a unique GUID/name and starts a real-time system logger with process flags. EVENT_RECORD callbacks read named TDH properties with metadata-backed string types and copy bounded payloads to the queue. Created PID comes from ProcessId, never the ETW header PID. DCStart is marked as initial enumeration; DCEnd is ignored. Callback work contains no disk logging, enrichment, JSON, or rule execution. A consumer thread calls ProcessTrace; a five-second health thread queries ETW event/buffer loss. Dispatcher enrichment uses PROCESS_QUERY_LIMITED_INFORMATION, validates creation against event time, and queries full image path. Failures leave fields null.
