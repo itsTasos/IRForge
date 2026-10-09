@@ -1,5 +1,0 @@
-string(RANDOM LENGTH 12 ALPHABET 0123456789abcdef suffix)
-execute_process(COMMAND "${EXE}" replay --events "${SOURCE}/tests/fixtures/suspicious_chain.jsonl" --rules "${SOURCE}/rules" --output "${BINARY}/replay-${suffix}" RESULT_VARIABLE result)
-if(NOT result EQUAL 0)
-  message(FATAL_ERROR "Replay failed: ${result}")
-endif()

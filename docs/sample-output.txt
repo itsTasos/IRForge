@@ -1,5 +1,0 @@
-Actual synthetic fixture replay captured 2026-10-08; not a live compromise claim.
-
-ALERT high score=60 confidence=high process/100:c1000 A time-valid Office parent launched a scripting shell. Legitimate automation can produce this behavior. PowerShell command line contains an encoded-command indicator; this is context for investigation, not proof of malicious activity.
-ALERT critical score=100 confidence=high process/100:c1000 A time-valid Office parent launched a scripting shell. Legitimate automation can produce this behavior. PowerShell command line contains an encoded-command indicator; this is context for investigation, not proof of malicious activity. A scripting process was associated with a public remote TCP endpoint snapshot. Public addressing is not malicious by itself; connection direction is unknown. An Office-launched encoded shell and a public TCP observation share the same verified process generation within 60 seconds. This observed chain does not confirm C2.
-Replay complete: 2 alerts in build/replay-final-01

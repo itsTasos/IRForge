@@ -1,0 +1,9 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.zip binary
+*.dll binary
+*.exe binary
+*.msi binary
+# Preserve upstream legal texts byte for byte, including their whitespace.
+assets/licenses/** -text -whitespace
