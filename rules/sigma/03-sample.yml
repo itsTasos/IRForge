@@ -1,0 +1,20 @@
+title: Regsvr32 remote scriptlet context
+id: IRF-SIGMA-003
+description: Regsvr32 remote scriptlet context
+author: IRForge
+license: MIT
+level: medium
+logsource:
+  product: windows
+  category: process_creation
+tags:
+  - attack.t1218.010
+falsepositives:
+  - Approved lab or administration matching this argument combination
+detection:
+  selection:
+    Image|endswith: "\\regsvr32.exe"
+    CommandLine|contains|all:
+      - "/i:http"
+      - "scrobj.dll"
+  condition: selection

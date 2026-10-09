@@ -1,0 +1,5 @@
+#pragma once
+namespace irforge::migration_sql {
+inline constexpr const char *initial = R"IRFSQL(@IRFORGE_SQL_001@)IRFSQL";
+inline constexpr const char *aliases = R"IRFSQL(@IRFORGE_SQL_002@)IRFSQL";
+}

@@ -1,0 +1,20 @@
+title: PowerShell remote download with encoded input
+id: IRF-SIGMA-001
+description: PowerShell remote download with encoded input
+author: IRForge
+license: MIT
+level: medium
+logsource:
+  product: windows
+  category: process_creation
+tags:
+  - attack.t1059.001
+falsepositives:
+  - Approved lab or administration matching this argument combination
+detection:
+  selection:
+    Image|endswith: "\\powershell.exe"
+    CommandLine|contains|all:
+      - " -enc"
+      - "downloadstring"
+  condition: selection

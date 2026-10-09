@@ -1,0 +1,20 @@
+title: Certutil URL retrieval context
+id: IRF-SIGMA-005
+description: Certutil URL retrieval context
+author: IRForge
+license: MIT
+level: medium
+logsource:
+  product: windows
+  category: process_creation
+tags:
+  - attack.t1105
+falsepositives:
+  - Approved lab or administration matching this argument combination
+detection:
+  selection:
+    Image|endswith: "\\certutil.exe"
+    CommandLine|contains|all:
+      - "-urlcache"
+      - "http"
+  condition: selection

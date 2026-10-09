@@ -20,11 +20,44 @@
 #endif
 namespace irforge {
 namespace {
-const std::array<std::string, 10> names = {"process_start",           "process_exit",
-                                           "tcp_connection_observed", "tcp_connection_closed",
-                                           "registry_value_added",    "registry_value_modified",
-                                           "registry_value_deleted",  "registry_key_added",
-                                           "registry_key_deleted",    "monitor_status"};
+const std::vector<std::string> names = {"process_start",
+                                        "process_exit",
+                                        "tcp_connection_observed",
+                                        "tcp_connection_closed",
+                                        "registry_value_added",
+                                        "registry_value_modified",
+                                        "registry_value_deleted",
+                                        "registry_key_added",
+                                        "registry_key_deleted",
+                                        "monitor_status",
+                                        "file_created",
+                                        "file_modified",
+                                        "file_deleted",
+                                        "file_renamed",
+                                        "artifact_enriched",
+                                        "scheduled_task_added",
+                                        "scheduled_task_changed",
+                                        "scheduled_task_removed",
+                                        "service_created",
+                                        "service_changed",
+                                        "service_removed",
+                                        "startup_entry_added",
+                                        "startup_entry_changed",
+                                        "startup_entry_removed",
+                                        "logon_observed",
+                                        "dns_observed",
+                                        "sysmon_network_connect",
+                                        "sysmon_registry_change",
+                                        "hash_completed",
+                                        "signature_checked",
+                                        "yara_match",
+                                        "baseline_deviation",
+                                        "threat_intel_result",
+                                        "coverage_gap",
+                                        "dropped_events",
+                                        "watcher_restart",
+                                        "health_changed",
+                                        "unmapped"};
 template <class T> Json opt(const std::optional<T> &x) { return x ? Json(*x) : Json(nullptr); }
 template <class T> std::optional<T> optional(const Json &j, const char *key) {
     if (!j.contains(key) || j.at(key).is_null())
@@ -208,6 +241,8 @@ bool userWritablePath(const std::string &s) {
            p->find("\\temp\\") != std::string::npos;
 }
 std::string identityKey(const ProcessIdentity &i) {
+    if (i.processGuid)
+        return "guid/" + lower(*i.processGuid);
     return std::to_string(i.pid) + ":" +
            (i.creationTime100ns ? "c" + std::to_string(*i.creationTime100ns)
                                 : "g" + std::to_string(i.generation));
@@ -254,7 +289,11 @@ std::string addressClass(const std::string &input) {
     return (b[0] & 224) == 32 ? "public" : "reserved";
 }
 Json identityJson(const ProcessIdentity &i) {
-    return {{"pid", i.pid}, {"creation_time_100ns", opt(i.creationTime100ns)}, {"generation", i.generation}};
+    Json result = {
+        {"pid", i.pid}, {"creation_time_100ns", opt(i.creationTime100ns)}, {"generation", i.generation}};
+    if (i.processGuid)
+        result["sysmon_process_guid"] = *i.processGuid;
+    return result;
 }
 void to_json(Json &j, const SecurityEvent &e) {
     j = {{"schema_version", 1},
@@ -290,6 +329,17 @@ void to_json(Json &j, const SecurityEvent &e) {
              {"service_image", opt(x->serviceImage)},
              {"service_start", opt(x->serviceStart)},
              {"service_type", opt(x->serviceType)}};
+    else if (auto x = std::get_if<FilePayload>(&e.payload))
+        p = {{"path", x->path},
+             {"previous_path", x->previousPath},
+             {"action", x->action},
+             {"actor_pid", opt(x->actorPid)},
+             {"metadata", x->metadata}};
+    else if (auto x = std::get_if<InventoryPayload>(&e.payload))
+        p = {{"kind", x->kind},     {"key", x->key},     {"action", x->action},
+             {"before", x->before}, {"after", x->after}, {"initial_snapshot", x->initialSnapshot}};
+    else if (auto x = std::get_if<ObservationPayload>(&e.payload))
+        p = x->fields;
     else {
         auto &st = std::get<StatusPayload>(e.payload);
         p = {{"state", st.state},
@@ -300,15 +350,68 @@ void to_json(Json &j, const SecurityEvent &e) {
              {"decode_errors", st.decodeErrors}};
     }
     j["payload"] = std::move(p);
+    if (auto x = std::get_if<ProcessPayload>(&e.payload); x && x->parentProcessGuid)
+        j["payload"]["parent_process_guid"] = *x->parentProcessGuid;
+    if (auto x = std::get_if<ProcessPayload>(&e.payload); x && x->parentImagePath)
+        j["payload"]["parent_image_path"] = *x->parentImagePath;
+    if (auto x = std::get_if<TcpPayload>(&e.payload); x && x->ownerProcessGuid)
+        j["payload"]["owner_process_guid"] = *x->ownerProcessGuid;
+    if (e.schemaVersion == 2 || static_cast<int>(e.type) > static_cast<int>(EventType::MonitorStatus)) {
+        j["schema_version"] = 2;
+        j["sequence"] = e.id;
+        j["event_id"] =
+            e.uniqueId.empty() ? e.hostId + "/" + e.sessionId + "/" + std::to_string(e.id) : e.uniqueId;
+        j["host_id"] = e.hostId;
+        j["session_id"] = e.sessionId;
+        j["observed_at_utc"] = formatUtc(e.observedAtUtc ? e.observedAtUtc : e.timestampUtc);
+        j["source_record_id"] = e.sourceRecordId.empty() ? Json(nullptr) : Json(e.sourceRecordId);
+        j["attribution"] = {{"method", e.attributionMethod}, {"confidence", e.attributionConfidence}};
+        j["data_quality"] = {{"partial", e.partial}, {"missing_data", e.missingData}};
+        j["privacy"] = {{"redacted", e.redacted}};
+        if (!e.providerChannel.empty())
+            j["provider_channel"] = e.providerChannel;
+        if (!e.bookmarkXml.empty())
+            j["bookmark_xml"] = e.bookmarkXml;
+    }
 }
-void from_json(const Json &j, SecurityEvent &e) {
-    if (!j.is_object() || j.at("schema_version") != 1)
+void from_json(const Json &input, SecurityEvent &e) {
+    Json j = input;
+    if (!j.is_object() || !j.contains("schema_version") ||
+        (j.at("schema_version") != 1 && j.at("schema_version") != 2))
         throw std::runtime_error("unsupported event schema");
+    if (j["schema_version"] == 2) {
+        e.schemaVersion = 2;
+        e.uniqueId = j.at("event_id").get<std::string>();
+        e.hostId = j.at("host_id").get<std::string>();
+        e.sessionId = j.at("session_id").get<std::string>();
+        if (e.uniqueId.empty() || e.uniqueId.size() > 512 || e.hostId.empty() || e.sessionId.empty())
+            throw std::runtime_error("v2 requires bounded stable event/host/session identities");
+        j["event_id"] = j.at("sequence");
+        if (!j.contains("event_type") && j.contains("type"))
+            j["event_type"] = j["type"];
+        e.observedAtUtc = parseUtc(j.at("observed_at_utc").get<std::string>());
+        e.sourceRecordId = optional<std::string>(j, "source_record_id").value_or("");
+        auto a = j.value("attribution", Json::object());
+        e.attributionMethod = a.value("method", std::string("unknown"));
+        e.attributionConfidence = a.value("confidence", std::string("low"));
+        if (e.attributionConfidence != "low" && e.attributionConfidence != "medium" &&
+            e.attributionConfidence != "high")
+            throw std::runtime_error("invalid attribution confidence");
+        e.partial = j.value("data_quality", Json::object()).value("partial", false);
+        e.missingData =
+            j.value("data_quality", Json::object()).value("missing_data", std::vector<std::string>{});
+        e.redacted = j.value("privacy", Json::object()).value("redacted", false);
+        e.providerChannel = j.value("provider_channel", std::string{});
+        e.bookmarkXml = j.value("bookmark_xml", std::string{});
+        if (e.providerChannel.size() > 512 || e.bookmarkXml.size() > 16384)
+            throw std::runtime_error("invalid provider cursor size");
+    }
     auto integer = [](const Json &object, const char *key, std::uint64_t max, bool nullable = false) {
         if (nullable && (!object.contains(key) || object.at(key).is_null()))
             return;
         const auto &value = object.at(key);
-        if (!value.is_number_integer() || value < 0 || value > max)
+        if (!value.is_number_integer() || (!value.is_number_unsigned() && value.get<std::int64_t>() < 0) ||
+            value.get<std::uint64_t>() > max)
             throw std::runtime_error(std::string("invalid integer field: ") + key);
     };
     integer(j, "event_id", UINT64_MAX);
@@ -326,15 +429,21 @@ void from_json(const Json &j, SecurityEvent &e) {
         integer(i, "generation", UINT64_MAX, true);
         integer(p, "parent_pid", UINT32_MAX, true);
         integer(p, "exit_code", UINT32_MAX, true);
-        x.identity = {i.at("pid").get<ProcessId>(), optional<std::uint64_t>(i, "creation_time_100ns"),
-                      i.value("generation", std::uint64_t{})};
+        x.identity = {i.at("pid").get<ProcessId>(),
+                      optional<std::uint64_t>(i, "creation_time_100ns"),
+                      i.value("generation", std::uint64_t{}),
+                      {}};
         x.parentPid = optional<ProcessId>(p, "parent_pid");
         x.imagePath = optional<std::string>(p, "image_path");
         x.commandLine = optional<std::string>(p, "command_line");
         x.exitCode = optional<std::uint32_t>(p, "exit_code");
         x.initialEnumeration = p.value("initial_enumeration", false);
+        x.identity.processGuid = optional<std::string>(i, "sysmon_process_guid");
+        x.parentProcessGuid = optional<std::string>(p, "parent_process_guid");
+        x.parentImagePath = optional<std::string>(p, "parent_image_path");
         e.payload = x;
-    } else if (e.type == EventType::TcpConnectionObserved || e.type == EventType::TcpConnectionClosed) {
+    } else if (e.type == EventType::TcpConnectionObserved || e.type == EventType::TcpConnectionClosed ||
+               e.type == EventType::SysmonNetworkConnect) {
         TcpPayload x;
         integer(p, "owner_pid", UINT32_MAX);
         integer(p, "owner_creation_time_100ns", UINT64_MAX, true);
@@ -354,6 +463,7 @@ void from_json(const Json &j, SecurityEvent &e) {
         x.state = p.at("state").get<std::string>();
         x.firstSnapshot = p.value("first_snapshot", false);
         x.change = p.value("change", std::string("appeared"));
+        x.ownerProcessGuid = optional<std::string>(p, "owner_process_guid");
         e.payload = x;
     } else if (e.type == EventType::MonitorStatus) {
         e.payload = StatusPayload{p.at("state").get<std::string>(),
@@ -362,7 +472,8 @@ void from_json(const Json &j, SecurityEvent &e) {
                                   p.value("events_lost", std::uint64_t{}),
                                   p.value("buffers_lost", std::uint64_t{}),
                                   p.value("decode_errors", std::uint64_t{})};
-    } else {
+    } else if ((e.type >= EventType::RegistryValueAdded && e.type <= EventType::RegistryKeyDeleted) ||
+               e.type == EventType::SysmonRegistryChange) {
         RegistryPayload x;
         integer(p, "actor_pid", UINT32_MAX, true);
         integer(p, "service_start", UINT32_MAX, true);
@@ -378,6 +489,18 @@ void from_json(const Json &j, SecurityEvent &e) {
         x.serviceStart = optional<std::uint32_t>(p, "service_start");
         x.serviceType = optional<std::uint32_t>(p, "service_type");
         e.payload = x;
+    } else if (e.type >= EventType::FileCreated && e.type <= EventType::ArtifactEnriched) {
+        e.payload = FilePayload{p.at("path").get<std::string>(), p.value("previous_path", std::string{}),
+                                p.value("action", std::string{}), optional<ProcessId>(p, "actor_pid"),
+                                p.value("metadata", Json::object())};
+    } else if (e.type >= EventType::ScheduledTaskAdded && e.type <= EventType::StartupEntryRemoved) {
+        e.payload = InventoryPayload{p.at("kind").get<std::string>(),   p.at("key").get<std::string>(),
+                                     p.at("action").get<std::string>(), p.value("before", Json(nullptr)),
+                                     p.value("after", Json(nullptr)),   p.value("initial_snapshot", false)};
+    } else {
+        if (!p.is_object())
+            throw std::runtime_error("observation payload must be an object");
+        e.payload = ObservationPayload{p};
     }
     // A whole line is bounded by replay; also reject huge individual strings from any caller.
     if (j.dump().size() > 1048576)

@@ -2,12 +2,13 @@
   "version": 6,
   "cmakeMinimumRequired": {"major": 3, "minor": 26, "patch": 0},
   "configurePresets": [
+    {"name":"windows-release", "inherits":"mingw", "displayName":"Windows Release (portable MinGW)"},
     {
       "name": "mingw",
       "displayName": "Windows x64 Release (MinGW, no Visual Studio)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/mingw",
-      "cacheVariables": {"CMAKE_BUILD_TYPE": "Release", "CMAKE_CXX_COMPILER": "g++"}
+      "cacheVariables": {"CMAKE_BUILD_TYPE": "Release", "CMAKE_CXX_COMPILER": "g++", "BUILD_TESTING": "OFF"}
     },
     {
       "name": "mingw-debug",
@@ -18,11 +19,13 @@
     }
   ],
   "buildPresets": [
+    {"name":"windows-release", "configurePreset":"windows-release"},
     {"name": "mingw", "configurePreset": "mingw"},
     {"name": "release", "configurePreset": "mingw"},
     {"name": "debug", "configurePreset": "mingw-debug"}
   ],
   "testPresets": [
+    {"name":"windows-release", "configurePreset":"windows-release", "output":{"outputOnFailure":true}},
     {"name": "mingw", "configurePreset": "mingw", "output": {"outputOnFailure": true}},
     {"name": "release", "configurePreset": "mingw", "output": {"outputOnFailure": true}},
     {"name": "debug", "configurePreset": "mingw-debug", "output": {"outputOnFailure": true}}

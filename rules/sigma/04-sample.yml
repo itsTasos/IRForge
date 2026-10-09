@@ -1,0 +1,19 @@
+title: Mshta remote content context
+id: IRF-SIGMA-004
+description: Mshta remote content context
+author: IRForge
+license: MIT
+level: medium
+logsource:
+  product: windows
+  category: process_creation
+tags:
+  - attack.t1218.005
+falsepositives:
+  - Approved lab or administration matching this argument combination
+detection:
+  selection:
+    Image|endswith: "\\mshta.exe"
+    CommandLine|contains|all:
+      - "https://"
+  condition: selection

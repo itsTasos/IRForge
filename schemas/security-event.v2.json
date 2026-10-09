@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:irforge:security-event:2",
+  "type": "object",
+  "required": ["schema_version", "event_id", "sequence", "event_type", "host_id", "session_id", "timestamp_utc", "observed_at_utc", "source", "payload", "attribution", "data_quality", "privacy"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "event_id": {"type": "string", "minLength": 1, "maxLength": 512},
+    "sequence": {"type": "integer", "minimum": 1},
+    "event_type": {"type": "string"},
+    "host_id": {"type": "string", "minLength": 1},
+    "session_id": {"type": "string", "minLength": 1},
+    "timestamp_utc": {"type": "string", "format": "date-time"},
+    "observed_at_utc": {"type": "string", "format": "date-time"},
+    "source": {"type": "string"},
+    "payload": {"type": "object"},
+    "attribution": {"type": "object", "required": ["method", "confidence"], "properties": {"confidence": {"enum": ["low", "medium", "high"]}}},
+    "data_quality": {"type": "object"},
+    "privacy": {"type": "object"}
+  }
+}

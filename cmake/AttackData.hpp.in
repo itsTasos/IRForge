@@ -1,0 +1,2 @@
+#pragma once
+namespace irforge { inline constexpr const char *attackData = R"IRFATTACK(@IRFORGE_ATTACK_DATA@)IRFATTACK"; }

@@ -1,0 +1,1 @@
+{"ca_file":"C:/Operator/PKI/ca.pem","identity_pfx":"C:/Operator/PKI/collector.pfx","credential_target":"IRForge.Collector.PFX","database":"C:/ProgramData/IRForgeCollector/evidence.sqlite","bind":"127.0.0.1","port":8443,"rules_dir":"rules/internal","pipe_name":"IRForge.Collector.v1"}

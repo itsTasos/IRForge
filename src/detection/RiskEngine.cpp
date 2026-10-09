@@ -30,6 +30,10 @@ Json incidentJson(const Incident &i) {
                          {"reason", m.reason},
                          {"evidence_key", m.key},
                          {"event_ids", m.eventIds}});
+        if (!m.attack.empty())
+            rules.back()["attack"] = m.attack;
+        if (!m.confidence.empty())
+            rules.back()["confidence"] = m.confidence;
         evidence.insert(m.eventIds.begin(), m.eventIds.end());
     }
     for (auto id : evidence)

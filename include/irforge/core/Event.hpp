@@ -22,12 +22,41 @@ enum class EventType {
     RegistryValueDeleted,
     RegistryKeyAdded,
     RegistryKeyDeleted,
-    MonitorStatus
+    MonitorStatus,
+    FileCreated,
+    FileModified,
+    FileDeleted,
+    FileRenamed,
+    ArtifactEnriched,
+    ScheduledTaskAdded,
+    ScheduledTaskChanged,
+    ScheduledTaskRemoved,
+    ServiceCreated,
+    ServiceChanged,
+    ServiceRemoved,
+    StartupEntryAdded,
+    StartupEntryChanged,
+    StartupEntryRemoved,
+    LogonObserved,
+    DnsObserved,
+    SysmonNetworkConnect,
+    SysmonRegistryChange,
+    HashCompleted,
+    SignatureChecked,
+    YaraMatch,
+    BaselineDeviation,
+    ThreatIntelResult,
+    CoverageGap,
+    DroppedEvents,
+    WatcherRestart,
+    HealthChanged,
+    Unmapped
 };
 struct ProcessIdentity {
     ProcessId pid{};
     std::optional<std::uint64_t> creationTime100ns;
     std::uint64_t generation{};
+    std::optional<std::string> processGuid;
     bool operator==(const ProcessIdentity &) const = default;
 };
 struct ProcessPayload {
@@ -36,6 +65,8 @@ struct ProcessPayload {
     std::optional<std::string> imagePath, commandLine;
     std::optional<std::uint32_t> exitCode;
     bool initialEnumeration = false;
+    std::optional<std::string> parentProcessGuid;
+    std::optional<std::string> parentImagePath;
 };
 struct TcpPayload {
     ProcessId ownerPid{};
@@ -44,6 +75,7 @@ struct TcpPayload {
     std::uint16_t localPort{}, remotePort{};
     bool firstSnapshot = false;
     std::string change = "appeared";
+    std::optional<std::string> ownerProcessGuid;
     bool operator==(const TcpPayload &) const = default;
 };
 struct RegistryValue {
@@ -65,7 +97,22 @@ struct StatusPayload {
     std::uint32_t errorCode{};
     std::uint64_t eventsLost{}, buffersLost{}, decodeErrors{};
 };
-using EventPayload = std::variant<ProcessPayload, TcpPayload, RegistryPayload, StatusPayload>;
+struct FilePayload {
+    std::string path, previousPath, action;
+    std::optional<ProcessId> actorPid;
+    Json metadata = Json::object();
+};
+struct InventoryPayload {
+    std::string kind, key, action;
+    Json before = nullptr, after = nullptr;
+    bool initialSnapshot = false;
+};
+// Bounded provider-specific observations; common native payloads remain typed.
+struct ObservationPayload {
+    Json fields = Json::object();
+};
+using EventPayload = std::variant<ProcessPayload, TcpPayload, RegistryPayload, StatusPayload, FilePayload,
+                                  InventoryPayload, ObservationPayload>;
 struct SecurityEvent {
     EventId id{};
     EventType type{};
@@ -73,6 +120,13 @@ struct SecurityEvent {
     std::chrono::steady_clock::time_point receivedAt = std::chrono::steady_clock::now();
     std::string source, host;
     EventPayload payload = ProcessPayload{};
+    int schemaVersion = 1;
+    std::string uniqueId, hostId, sessionId, sourceRecordId;
+    Millis observedAtUtc{};
+    std::string attributionMethod = "unknown", attributionConfidence = "low";
+    bool partial = false, redacted = false;
+    std::vector<std::string> missingData;
+    std::string providerChannel, bookmarkXml;
 };
 std::string eventTypeName(EventType);
 EventType parseEventType(const std::string &);

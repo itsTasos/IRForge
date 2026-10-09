@@ -1,0 +1,390 @@
+{
+  "schema_version": 1,
+  "release": "18.0",
+  "source": "https://github.com/mitre-attack/attack-stix-data/tree/v18.0",
+  "source_sha256": "ff94838b09edfe7d59eec1cd7af0a1e229c4bc0ae0bdfa98ad170aeec9c3e272",
+  "license": "MITRE ATT&CK Terms of Use",
+  "techniques": [
+    {
+      "id": "T1027.010",
+      "name": "Command Obfuscation",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1027/010",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-04-15T22:06:13.992Z",
+      "source_stix_id": "attack-pattern--d511a6f6-4a33-41d5-bc95-c343875d1377"
+    },
+    {
+      "id": "T1036",
+      "name": "Masquerading",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1036",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:42.609Z",
+      "source_stix_id": "attack-pattern--42e8de7b-37b2-4258-905a-6897815e58e0"
+    },
+    {
+      "id": "T1047",
+      "name": "Windows Management Instrumentation",
+      "tactics": [
+        "execution"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1047",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:19.670Z",
+      "source_stix_id": "attack-pattern--01a5a209-b94c-450b-b7f9-946497d91055"
+    },
+    {
+      "id": "T1053.005",
+      "name": "Scheduled Task",
+      "tactics": [
+        "execution",
+        "persistence",
+        "privilege-escalation"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1053/005",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:19.176Z",
+      "source_stix_id": "attack-pattern--005a06c6-14bf-4118-afa0-ebcd8aebb0c9"
+    },
+    {
+      "id": "T1055",
+      "name": "Process Injection",
+      "tactics": [
+        "defense-evasion",
+        "privilege-escalation"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1055",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:43.053Z",
+      "source_stix_id": "attack-pattern--43e7dc91-05b2-474c-b9ac-2ed4fe101f4d"
+    },
+    {
+      "id": "T1059",
+      "name": "Command and Scripting Interpreter",
+      "tactics": [
+        "execution"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1059",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:57.520Z",
+      "source_stix_id": "attack-pattern--7385dfaf-6886-4229-9ecd-6fd678040830"
+    },
+    {
+      "id": "T1059.001",
+      "name": "PowerShell",
+      "tactics": [
+        "execution"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1059/001",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:07.660Z",
+      "source_stix_id": "attack-pattern--970a3432-3237-47ad-bcca-7d8cbb217736"
+    },
+    {
+      "id": "T1059.003",
+      "name": "Windows Command Shell",
+      "tactics": [
+        "execution"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1059/003",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:25.722Z",
+      "source_stix_id": "attack-pattern--d1fcf083-a721-4223-aedf-bf8960798d62"
+    },
+    {
+      "id": "T1059.005",
+      "name": "Visual Basic",
+      "tactics": [
+        "execution"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1059/005",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:29.678Z",
+      "source_stix_id": "attack-pattern--dfd7cc1d-e1d8-4394-a198-97c4cab8aa67"
+    },
+    {
+      "id": "T1059.006",
+      "name": "Python",
+      "tactics": [
+        "execution"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1059/006",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:23.660Z",
+      "source_stix_id": "attack-pattern--cc3502b5-30cc-4473-ad48-42d51a6ef6d1"
+    },
+    {
+      "id": "T1059.007",
+      "name": "JavaScript",
+      "tactics": [
+        "execution"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1059/007",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:24.217Z",
+      "source_stix_id": "attack-pattern--0f4a0c76-ab2d-4cb0-85d3-3f0efb8cba0d"
+    },
+    {
+      "id": "T1070.001",
+      "name": "Clear Windows Event Logs",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1070/001",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:52.287Z",
+      "source_stix_id": "attack-pattern--6495ae23-3ab4-43c5-a94f-5638a2c31fd2"
+    },
+    {
+      "id": "T1071.001",
+      "name": "Web Protocols",
+      "tactics": [
+        "command-and-control"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1071/001",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:29.591Z",
+      "source_stix_id": "attack-pattern--df8b2a25-8bdf-4856-953c-a04372b1c161"
+    },
+    {
+      "id": "T1078",
+      "name": "Valid Accounts",
+      "tactics": [
+        "defense-evasion",
+        "persistence",
+        "privilege-escalation",
+        "initial-access"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1078",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:14.095Z",
+      "source_stix_id": "attack-pattern--b17a1a56-e99c-403c-8948-561df0cffe81"
+    },
+    {
+      "id": "T1105",
+      "name": "Ingress Tool Transfer",
+      "tactics": [
+        "command-and-control"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1105",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:32.714Z",
+      "source_stix_id": "attack-pattern--e6919abc-99f9-4c6c-95a5-14761e7b2add"
+    },
+    {
+      "id": "T1112",
+      "name": "Modify Registry",
+      "tactics": [
+        "defense-evasion",
+        "persistence"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1112",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:49.294Z",
+      "source_stix_id": "attack-pattern--57340c81-c025-4189-8fa0-fc7ede51bae4"
+    },
+    {
+      "id": "T1136.001",
+      "name": "Local Account",
+      "tactics": [
+        "persistence"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1136/001",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:51.903Z",
+      "source_stix_id": "attack-pattern--635cbe30-392d-4e27-978e-66774357c762"
+    },
+    {
+      "id": "T1204.002",
+      "name": "Malicious File",
+      "tactics": [
+        "execution"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1204/002",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:31.674Z",
+      "source_stix_id": "attack-pattern--232b7f21-adf9-4b42-b936-b9d6f7df856e"
+    },
+    {
+      "id": "T1218.001",
+      "name": "Compiled HTML File",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1218/001",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:11.609Z",
+      "source_stix_id": "attack-pattern--a6937325-9321-4e2e-bb2b-3ed2d40b2a9d"
+    },
+    {
+      "id": "T1218.002",
+      "name": "Control Panel",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1218/002",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:45.979Z",
+      "source_stix_id": "attack-pattern--4ff5d6a8-c062-4c68-a778-36fc5edd564f"
+    },
+    {
+      "id": "T1218.004",
+      "name": "InstallUtil",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1218/004",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:34.798Z",
+      "source_stix_id": "attack-pattern--2cd950a6-16c4-404a-aa01-044322395107"
+    },
+    {
+      "id": "T1218.005",
+      "name": "Mshta",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1218/005",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:03.265Z",
+      "source_stix_id": "attack-pattern--840a987a-99bd-4a80-a5c9-0cb2baa6cade"
+    },
+    {
+      "id": "T1218.007",
+      "name": "Msiexec",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1218/007",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:38.626Z",
+      "source_stix_id": "attack-pattern--365be77f-fc0e-42ee-bac8-4faf806d9336"
+    },
+    {
+      "id": "T1218.009",
+      "name": "Regsvcs/Regasm",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1218/009",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:21.181Z",
+      "source_stix_id": "attack-pattern--c48a67ee-b657-45c1-91bf-6cdbe27205f8"
+    },
+    {
+      "id": "T1218.010",
+      "name": "Regsvr32",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1218/010",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:17.377Z",
+      "source_stix_id": "attack-pattern--b97f1d35-4249-4486-a6b5-ee60ccf24fab"
+    },
+    {
+      "id": "T1218.011",
+      "name": "Rundll32",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1218/011",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:20.567Z",
+      "source_stix_id": "attack-pattern--045d0922-2310-4e60-b5e4-3302302cb3c5"
+    },
+    {
+      "id": "T1543.003",
+      "name": "Windows Service",
+      "tactics": [
+        "persistence",
+        "privilege-escalation"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1543/003",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:33.408Z",
+      "source_stix_id": "attack-pattern--2959d63f-73fd-46a1-abd2-109d7dcede32"
+    },
+    {
+      "id": "T1547.001",
+      "name": "Registry Run Keys / Startup Folder",
+      "tactics": [
+        "persistence",
+        "privilege-escalation"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1547/001",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:09.744Z",
+      "source_stix_id": "attack-pattern--9efb1ea7-c37b-4595-9640-b7680cd84279"
+    },
+    {
+      "id": "T1553.002",
+      "name": "Code Signing",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1553/002",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:48:37.098Z",
+      "source_stix_id": "attack-pattern--32901740-b42c-4fdd-bc02-345b5dc57082"
+    },
+    {
+      "id": "T1562.001",
+      "name": "Disable or Modify Tools",
+      "tactics": [
+        "defense-evasion"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1562/001",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:13.019Z",
+      "source_stix_id": "attack-pattern--ac08589e-ee59-4935-8667-d845e38fe579"
+    },
+    {
+      "id": "T1569.002",
+      "name": "Service Execution",
+      "tactics": [
+        "execution"
+      ],
+      "url": "https://attack.mitre.org/techniques/T1569/002",
+      "revoked": false,
+      "deprecated": false,
+      "modified": "2025-10-24T17:49:35.506Z",
+      "source_stix_id": "attack-pattern--f1951e8a-500e-4a26-8803-76d95c4554b4"
+    }
+  ]
+}

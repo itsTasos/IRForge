@@ -1,6 +1,10 @@
 #include "irforge/core/EventBus.hpp"
 #include <stdexcept>
 namespace irforge {
+std::size_t EventBus::depth() {
+    std::lock_guard lock(mutex_);
+    return queue_.size();
+}
 EventBus::EventBus(std::size_t n) : capacity_(n) {
     if (!n)
         throw std::invalid_argument("queue capacity is zero");

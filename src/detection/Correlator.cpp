@@ -33,6 +33,7 @@ std::string artifact(const RegistryPayload &r) {
 }
 } // namespace
 std::vector<Incident> Correlator::ingest(const SecurityEvent &e) {
+    lifecycle_.observe(e);
     watermark_ = std::max(watermark_, e.timestampUtc);
     if (e.type != EventType::MonitorStatus)
         history_.push_back(e);
@@ -42,6 +43,7 @@ std::vector<Incident> Correlator::expire(Millis now) {
     watermark_ = std::max(watermark_, now);
     auto cutoff = watermark_ - config_.context_retention_seconds * 1000LL;
     std::erase_if(history_, [&](const auto &e) { return e.timestampUtc < cutoff; });
+    lifecycle_.prune(cutoff, true);
     while (history_.size() > config_.max_history_events) {
         history_.pop_front();
         ++evicted_;
@@ -55,7 +57,7 @@ std::vector<Incident> Correlator::rebuild() {
     std::sort(ordered.begin(), ordered.end(), [](auto a, auto b) {
         return a->timestampUtc == b->timestampUtc ? a->id < b->id : a->timestampUtc < b->timestampUtc;
     });
-    ProcessTracker tracker;
+    ProcessTracker tracker = lifecycle_;
     for (auto e : ordered)
         tracker.observe(*e);
     std::vector<Evidence> evidence;
@@ -65,14 +67,59 @@ std::vector<Incident> Correlator::rebuild() {
             continue;
         const ProcessRecord *p = nullptr;
         if (auto x = std::get_if<ProcessPayload>(&e->payload))
-            p = tracker.resolve(x->identity.pid, e->timestampUtc, x->identity.creationTime100ns);
+            p = x->identity.processGuid
+                    ? tracker.resolveGuid(*x->identity.processGuid, e->timestampUtc)
+                    : tracker.resolve(x->identity.pid, e->timestampUtc, x->identity.creationTime100ns);
         if (auto x = std::get_if<TcpPayload>(&e->payload))
-            p = tracker.resolve(x->ownerPid, e->timestampUtc, x->ownerCreationTime100ns);
+            p = x->ownerProcessGuid
+                    ? tracker.resolveGuid(*x->ownerProcessGuid, e->timestampUtc)
+                    : tracker.resolve(x->ownerPid, e->timestampUtc, x->ownerCreationTime100ns);
         auto root = chainRoot(p, tracker);
         auto group = root ? "process/" + identityKey(root->data.identity) : "event/" + std::to_string(e->id);
         if (auto x = std::get_if<RegistryPayload>(&e->payload))
             group = "registry/" + artifact(*x);
+        if (auto x = std::get_if<FilePayload>(&e->payload))
+            group = "file/" + normalizePath(x->path);
+        if (auto x = std::get_if<InventoryPayload>(&e->payload))
+            group = "inventory/" + x->kind + "/" + lower(x->key);
+        if (auto x = std::get_if<ObservationPayload>(&e->payload)) {
+            if (e->type == EventType::YaraMatch && x->fields.contains("file"))
+                group = "file/" + normalizePath(x->fields.at("file").get<std::string>());
+            if (x->fields.contains("observed_event_id"))
+                for (auto observed : ordered)
+                    if (observed->uniqueId == x->fields.at("observed_event_id").get<std::string>()) {
+                        if (auto file = std::get_if<FilePayload>(&observed->payload))
+                            group = "file/" + normalizePath(file->path);
+                        else if (auto network = std::get_if<TcpPayload>(&observed->payload)) {
+                            auto owner = tracker.resolve(network->ownerPid, observed->timestampUtc,
+                                                         network->ownerCreationTime100ns);
+                            if (owner) {
+                                p = owner;
+                                auto ancestor = chainRoot(owner, tracker);
+                                group = "process/" + identityKey(ancestor->data.identity);
+                            }
+                        }
+                        break;
+                    }
+        }
         for (auto m : rules_.evaluate(*e, tracker)) {
+            if (auto observation = std::get_if<ObservationPayload>(&e->payload)) {
+                auto explicitId = observation->fields.value("observed_event_id", std::string{});
+                for (auto related : ordered) {
+                    bool linked = !explicitId.empty() && related->uniqueId == explicitId;
+                    if (e->type == EventType::YaraMatch)
+                        if (auto file = std::get_if<FilePayload>(&related->payload);
+                            file && related->type == EventType::ArtifactEnriched &&
+                            observation->fields.contains("file") && observation->fields.contains("sha256") &&
+                            file->metadata.contains("hash"))
+                            linked = normalizePath(file->path) ==
+                                         normalizePath(observation->fields.at("file").get<std::string>()) &&
+                                     file->metadata["hash"].value("sha256", Json(nullptr)) ==
+                                         observation->fields["sha256"];
+                    if (linked && related->id != e->id)
+                        m.eventIds.push_back(related->id);
+                }
+            }
             m.key = m.ruleId + "/" + (p ? identityKey(p->data.identity) : group);
             evidence.push_back({std::move(m), e, p, group});
         }
@@ -122,6 +169,12 @@ std::vector<Incident> Correlator::rebuild() {
         }
         i.first = std::min(i.first, item.match.first);
         i.last = std::max(i.last, item.match.last);
+        if (item.event->schemaVersion == 2 && !item.match.confidence.empty()) {
+            if (item.match.confidence == "low")
+                i.confidence = "low";
+            else if (item.match.confidence == "medium" && i.confidence == "high")
+                i.confidence = "medium";
+        }
         if (item.process) {
             auto root = chainRoot(item.process, tracker);
             i.root = root->data.identity;
@@ -130,7 +183,7 @@ std::vector<Incident> Correlator::rebuild() {
             if (std::find(i.processes.begin(), i.processes.end(), item.process->data.identity) ==
                 i.processes.end())
                 i.processes.push_back(item.process->data.identity);
-            if (!item.process->data.identity.creationTime100ns)
+            if (!item.process->data.identity.creationTime100ns && !item.process->data.identity.processGuid)
                 i.confidence = "low";
         }
         if (std::holds_alternative<TcpPayload>(item.event->payload) &&
@@ -203,16 +256,22 @@ std::vector<Incident> Correlator::rebuild() {
                 }
             }
             if (matched)
-                i.matches.push_back(
-                    {rule.id, rule.description, rule.id + "/" + key, rule.score, ids, first, last});
+                i.matches.push_back({rule.id, rule.description, rule.id + "/" + key, rule.score, ids, first,
+                                     last, rule.attack, rule.confidence});
         }
         scoreIncident(i);
     }
     std::vector<Incident> updates;
     for (auto &[key, i] : current) {
         auto old = incidents_.find(key);
+        bool evidenceChanged = false;
+        if (old != incidents_.end() && old->second.matches.size() == i.matches.size())
+            for (std::size_t n = 0; n < i.matches.size(); ++n)
+                evidenceChanged |= i.matches[n].eventIds != old->second.matches[n].eventIds ||
+                                   i.matches[n].ruleId != old->second.matches[n].ruleId ||
+                                   i.matches[n].confidence != old->second.matches[n].confidence;
         if (old == incidents_.end() || old->second.score != i.score ||
-            old->second.matches.size() != i.matches.size())
+            old->second.matches.size() != i.matches.size() || old->second.last != i.last || evidenceChanged)
             updates.push_back(i);
     }
     for (const auto &[key, old] : incidents_)

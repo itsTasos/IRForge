@@ -19,6 +19,7 @@ class EventBus {
     std::optional<SecurityEvent> pop();
     std::optional<SecurityEvent> popFor(std::chrono::milliseconds);
     bool drained();
+    std::size_t depth();
     void close();
     std::uint64_t dropped() const { return dropped_.load(); }
 };

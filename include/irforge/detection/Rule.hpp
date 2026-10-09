@@ -13,11 +13,16 @@ struct Rule {
     std::vector<Predicate> all, any;
     std::vector<std::string> requiresRules;
     int score{}, windowSeconds = 60;
+    Json condition = nullptr;
+    std::vector<std::string> attack, eventSources, falsePositives;
+    std::string license, source, confidence = "medium";
 };
 struct Match {
     std::string ruleId, reason, key;
     int points{};
     std::vector<EventId> eventIds;
     Millis first{}, last{};
+    std::vector<std::string> attack;
+    std::string confidence;
 };
 } // namespace irforge

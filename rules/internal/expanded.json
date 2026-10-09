@@ -1,0 +1,955 @@
+[
+  {
+    "schema_version": 2,
+    "id": "IRF-001",
+    "name": "PowerShell remote download with encoded input",
+    "description": "PowerShell remote download with encoded input; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "powershell.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": " -enc"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "downloadstring"
+        }
+      ]
+    },
+    "attack": [
+      "T1059.001"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-002",
+    "name": "Rundll32 javascript execution context",
+    "description": "Rundll32 javascript execution context; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "rundll32.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "javascript:"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "runhtmlapplication"
+        }
+      ]
+    },
+    "attack": [
+      "T1218.011"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-003",
+    "name": "Regsvr32 remote scriptlet context",
+    "description": "Regsvr32 remote scriptlet context; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "regsvr32.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "/i:http"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "scrobj.dll"
+        }
+      ]
+    },
+    "attack": [
+      "T1218.010"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-004",
+    "name": "Mshta remote content context",
+    "description": "Mshta remote content context; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "mshta.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "https://"
+        }
+      ]
+    },
+    "attack": [
+      "T1218.005"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-005",
+    "name": "Certutil URL retrieval context",
+    "description": "Certutil URL retrieval context; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "certutil.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "-urlcache"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "http"
+        }
+      ]
+    },
+    "attack": [
+      "T1105"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-006",
+    "name": "BITS transfer job and remote destination",
+    "description": "BITS transfer job and remote destination; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "bitsadmin.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "/transfer"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "http"
+        }
+      ]
+    },
+    "attack": [
+      "T1105"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-007",
+    "name": "Wscript user download script",
+    "description": "Wscript user download script; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "wscript.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "\\downloads\\"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": ".vbs"
+        }
+      ]
+    },
+    "attack": [
+      "T1059.005"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-008",
+    "name": "Cscript temporary javascript",
+    "description": "Cscript temporary javascript; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "cscript.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "\\temp\\"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": ".js"
+        }
+      ]
+    },
+    "attack": [
+      "T1059.007"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-009",
+    "name": "PowerShell encoded payload and hidden window",
+    "description": "PowerShell encoded payload and hidden window; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "powershell.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "-encodedcommand"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "hidden"
+        }
+      ]
+    },
+    "attack": [
+      "T1059.001"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-010",
+    "name": "PowerShell memory decoding and expression execution",
+    "description": "PowerShell memory decoding and expression execution; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "powershell.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "frombase64string"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "invoke-expression"
+        }
+      ]
+    },
+    "attack": [
+      "T1059.001"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-011",
+    "name": "PowerShell download followed by evaluation",
+    "description": "PowerShell download followed by evaluation; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "pwsh.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "invoke-webrequest"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "iex "
+        }
+      ]
+    },
+    "attack": [
+      "T1059.001"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-012",
+    "name": "Scheduled task creation with encoded script",
+    "description": "Scheduled task creation with encoded script; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "schtasks.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "/create"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "powershell"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": " -enc"
+        }
+      ]
+    },
+    "attack": [
+      "T1053.005"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-013",
+    "name": "Service creation from download directory",
+    "description": "Service creation from download directory; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "sc.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "create"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "binpath="
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "\\downloads\\"
+        }
+      ]
+    },
+    "attack": [
+      "T1543.003"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-014",
+    "name": "Run autorun points to temporary script",
+    "description": "Run autorun points to temporary script; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "reg.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": " add "
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "\\currentversion\\run"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "\\temp\\"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": ".vbs"
+        }
+      ]
+    },
+    "attack": [
+      "T1547.001"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-015",
+    "name": "Event log clear request",
+    "description": "Event log clear request; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "wevtutil.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": " cl "
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "security"
+        }
+      ]
+    },
+    "attack": [
+      "T1070.001"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-016",
+    "name": "Defender monitoring disable request",
+    "description": "Defender monitoring disable request; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "powershell.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "set-mppreference"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "-disablerealtimemonitoring"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "$true"
+        }
+      ]
+    },
+    "attack": [
+      "T1562.001"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-017",
+    "name": "WMIC remote process creation request",
+    "description": "WMIC remote process creation request; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "wmic.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "/node:"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "process call create"
+        }
+      ]
+    },
+    "attack": [
+      "T1047"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-018",
+    "name": "InstallUtil temporary directory execution",
+    "description": "InstallUtil temporary directory execution; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "installutil.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "/u"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "\\temp\\"
+        }
+      ]
+    },
+    "attack": [
+      "T1218.004"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-019",
+    "name": "Control applet from temporary directory",
+    "description": "Control applet from temporary directory; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "control.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "\\temp\\"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": ".cpl"
+        }
+      ]
+    },
+    "attack": [
+      "T1218.002"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-020",
+    "name": "Forfiles launches encoded interpreter",
+    "description": "Forfiles launches encoded interpreter; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "forfiles.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "/c"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "powershell"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": " -enc"
+        }
+      ]
+    },
+    "attack": [
+      "T1059.001"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-021",
+    "name": "Office launches remote HTA interpreter",
+    "description": "Office launches remote HTA interpreter; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "mshta.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "https://"
+        },
+        {
+          "field": "process.parent.name",
+          "operator": "in_ci",
+          "value": [
+            "winword.exe",
+            "excel.exe",
+            "powerpnt.exe"
+          ]
+        }
+      ]
+    },
+    "attack": [
+      "T1204.002"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-022",
+    "name": "Office launches encoded PowerShell",
+    "description": "Office launches encoded PowerShell; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "powershell.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": " -enc"
+        },
+        {
+          "field": "process.parent.name",
+          "operator": "in_ci",
+          "value": [
+            "winword.exe",
+            "excel.exe",
+            "powerpnt.exe"
+          ]
+        }
+      ]
+    },
+    "attack": [
+      "T1059.001"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-023",
+    "name": "Python user script and remote URL",
+    "description": "Python user script and remote URL; review explicit arguments, source and legitimate administration context.",
+    "severity": "medium",
+    "score": 25,
+    "event_type": "process_start",
+    "condition": {
+      "and": [
+        {
+          "field": "process.name",
+          "operator": "equals_ci",
+          "value": "python.exe"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "\\downloads\\"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": ".py"
+        },
+        {
+          "field": "process.command_line",
+          "operator": "contains_ci",
+          "value": "https://"
+        }
+      ]
+    },
+    "attack": [
+      "T1059.006"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved administration or deliberate lab execution with matching arguments; validate binary, signer and user intent."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-24",
+    "name": "New task points to temporary executable content",
+    "description": "New task points to temporary executable content; initial inventory is excluded; creator is unknown unless supplied by the provider.",
+    "severity": "medium",
+    "score": 20,
+    "event_type": "scheduled_task_added",
+    "condition": {
+      "and": [
+        {
+          "field": "inventory.image",
+          "operator": "contains_ci",
+          "value": "\\temp\\"
+        },
+        {
+          "field": "inventory.image",
+          "operator": "ends_with_ci",
+          "value": ".ps1"
+        }
+      ]
+    },
+    "attack": [
+      "T1053.005"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved lab installer or maintenance using temporary paths."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  },
+  {
+    "schema_version": 2,
+    "id": "IRF-25",
+    "name": "New service points to temporary executable content",
+    "description": "New service points to temporary executable content; initial inventory is excluded; creator is unknown unless supplied by the provider.",
+    "severity": "medium",
+    "score": 20,
+    "event_type": "service_created",
+    "condition": {
+      "and": [
+        {
+          "field": "inventory.image",
+          "operator": "contains_ci",
+          "value": "\\temp\\"
+        },
+        {
+          "field": "inventory.image",
+          "operator": "ends_with_ci",
+          "value": ".exe"
+        }
+      ]
+    },
+    "attack": [
+      "T1543.003"
+    ],
+    "confidence": "medium",
+    "false_positives": [
+      "Approved lab installer or maintenance using temporary paths."
+    ],
+    "source": "IRForge reviewed local pack 1.0",
+    "license": "MIT"
+  }
+]

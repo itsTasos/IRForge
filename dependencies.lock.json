@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "toolchain": {
+    "version": "w64devkit 2.6.0 / GCC 15.2.0",
+    "url": "https://github.com/skeeto/w64devkit/releases/download/v2.6.0/w64devkit-x64-2.6.0.7z.exe",
+    "sha256": "bb212f0012a9324b8cf4104a76c07199d9c17607b4c5755632108d0432359beb"
+  },
+  "archives": [
+    {
+      "name": "json",
+      "version": "3.11.3",
+      "file": "json.zip",
+      "url": "https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.zip",
+      "sha256": "04022b05d806eb5ff73023c280b68697d12b93e1b7267a0b22a1a39ec7578069",
+      "license": "MIT"
+    },
+    {
+      "name": "catch2",
+      "version": "3.7.1",
+      "file": "catch2.zip",
+      "url": "https://github.com/catchorg/Catch2/archive/refs/tags/v3.7.1.zip",
+      "sha256": "7d771897398704ecb61eae534912e50c4d3ec6129c4d01c174a55c29657970d7",
+      "license": "BSL-1.0"
+    },
+    {
+      "name": "sqlite",
+      "version": "3.53.4",
+      "file": "sqlite.zip",
+      "url": "https://sqlite.org/2026/sqlite-amalgamation-3530400.zip",
+      "sha256": "1e71ddf93849c6a6ecf58b827c0692073d2dd7ee40196158068f7b29f422e87d",
+      "license": "Public Domain"
+    },
+    {
+      "name": "tinyxml2",
+      "version": "11.0.0",
+      "file": "tinyxml2.zip",
+      "url": "https://github.com/leethomason/tinyxml2/archive/refs/tags/11.0.0.zip",
+      "sha256": "1c35b8d8a586125d5e43380fd2137abbfde645183ed1641f86c815359320412f",
+      "license": "Zlib"
+    },
+    {
+      "name": "yamlcpp",
+      "version": "0.8.0",
+      "file": "yamlcpp.zip",
+      "url": "https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.zip",
+      "sha256": "334e80ab7b52e14c23f94e041c74bab0742f2281aad55f66be2f19f4b7747071",
+      "license": "MIT"
+    },
+    {
+      "name": "yara",
+      "version": "1.21.0",
+      "file": "yara.zip",
+      "url": "https://github.com/VirusTotal/yara-x/releases/download/v1.21.0/yara-x-capi-v1.21.0-x86_64-pc-windows-msvc.zip",
+      "sha256": "f84b84113b43a1f3a0846395f90d099bf217e8ed2808712a7be66ce2a6ae7c2c",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "name": "qt",
+      "version": "6.8.3",
+      "file": "qtbase.7z",
+      "url": "https://qt.mirror.constant.com/online/qtsdkrepository/windows_x86/desktop/qt6_683/qt6_683/qt.qt6.683.win64_mingw/6.8.3-0-202503201308qtbase-Windows-Windows_10_22H2-Mingw-Windows-Windows_10_22H2-X86_64.7z",
+      "sha256": "a2cd09053e907b161d84696ec5f1c316cfc089482c5b04de9141b949fa19acd1",
+      "license": "LGPL-3.0 / Qt third-party notices"
+    },
+    {
+      "name": "qt-runtime",
+      "version": "MinGW 13.1.0 runtime rev1",
+      "file": "qtruntime.7z",
+      "url": "https://qt.mirror.constant.com/online/qtsdkrepository/windows_x86/desktop/qt6_683/qt6_683/qt.qt6.683.win64_mingw/6.8.3-0-202503201308MinGW-w64-x86_64-13.1.0-release-posix-seh-msvcrt-rt_v11-rev1-runtime.7z",
+      "sha256": "85e196195993a052d1137f22d6d7ba2f5e595c5103b96968a073c97ca1762dc6",
+      "license": "GCC runtime exception / MinGW-w64 licenses"
+    },
+    {
+      "name": "qt-source",
+      "version": "6.8.3",
+      "file": "qtbase-source.tar.xz",
+      "url": "https://qt.mirror.constant.com/archive/qt/6.8/6.8.3/submodules/qtbase-everywhere-src-6.8.3.tar.xz",
+      "sha256": "56001b905601bb9023d399f3ba780d7fa940f3e4861e496a7c490331f49e0b80",
+      "license": "Corresponding Qt source and third-party license texts"
+    },
+    {
+      "name": "clang-format",
+      "version": "19.1.7",
+      "file": "clang_format-19.1.7-py2.py3-none-win_amd64.whl",
+      "url": "https://files.pythonhosted.org/packages/e4/32/0b44f3582b9df0b8f90266ef43975e37ec8ad52bae4f85b71552f264d5a2/clang_format-19.1.7-py2.py3-none-win_amd64.whl",
+      "sha256": "3e3c75fbdf8827bbb7277226b3057fc3785dabe7284d3a9d15fceb250f68f529",
+      "license": "Apache-2.0 WITH LLVM-exception"
+    },
+    {
+      "name": "yara-source",
+      "version": "1.21.0",
+      "file": "yara-source.zip",
+      "url": "https://github.com/VirusTotal/yara-x/archive/refs/tags/v1.21.0.zip",
+      "sha256": "dfa4b4b9154ff06b4a5d030d65a582b1c0050bd8270ee15891792fc5bd7cd18f",
+      "license": "BSD-3-Clause and transitive notices"
+    }
+  ],
+  "test_tools": {
+    "cryptography": "50.0.2",
+    "stix2-validator": "3.2.0",
+    "jsonschema": "4.25.1"
+  },
+  "installer_tool": {
+    "package": "wix",
+    "version": "6.0.2",
+    "commit": "b3f340393117094a75ea8ced77f2357e4aa095e7",
+    "ui_extension": "WixToolset.UI.wixext/6.0.2",
+    "license": "Microsoft Reciprocal License; binary maintenance-fee agreement for revenue-generating use"
+  }
+}

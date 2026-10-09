@@ -237,6 +237,10 @@ void enrichProcess(SecurityEvent &e) {
     auto creationMs = static_cast<Millis>((creation - 116444736000000000ULL) / 10000);
     if (creationMs > e.timestampUtc)
         return; // PID was already reused after this event.
+    // Sysmon GUID is provider identity. Join native metadata only when its
+    // creation timestamp agrees with the provider start, never by current PID alone.
+    if (p->identity.processGuid && std::abs(creationMs - e.timestampUtc) > 2)
+        return;
     p->identity.creationTime100ns = creation;
     std::wstring path(32768, L'\0');
     DWORD size = static_cast<DWORD>(path.size());

@@ -45,7 +45,7 @@ std::vector<SecurityEvent> readReplay(const std::string &path) {
     return events;
 }
 void replay(const std::string &path, Correlator &correlator, AlertManager &alerts, JsonlWriter &writer,
-            Metrics &metrics, bool logAll) {
+            Metrics &metrics, bool logAll, const ReplayCallbacks &callbacks) {
     auto events = readReplay(path);
     VirtualClock clock;
     if (!events.empty())
@@ -53,9 +53,14 @@ void replay(const std::string &path, Correlator &correlator, AlertManager &alert
     for (const auto &e : events) {
         clock.advance(e.timestampUtc);
         metrics.observe(e);
+        if (callbacks.event)
+            callbacks.event(e);
         if (logAll)
             writer.event(e);
-        alerts.update(correlator.ingest(e), clock.now());
+        auto updates = correlator.ingest(e);
+        if (callbacks.incidents)
+            callbacks.incidents(updates);
+        alerts.update(updates, clock.now());
     }
     writer.document("monitor-health.json",
                     metrics.json(clock.now(), 0, correlator.incidents().size(), correlator.evicted()));

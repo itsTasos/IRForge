@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:irforge:incident:2",
+  "type": "object",
+  "required": ["schema_version", "incident_id", "host_id", "session_id", "status", "analysis_state", "severity", "risk_score", "confidence", "title", "summary", "rule_matches", "evidence_event_ids", "relationships", "timeline", "analyst_annotations", "provenance", "coverage_gaps", "score_explanation"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "status": {"enum": ["new", "investigating", "benign", "resolved"]},
+    "analysis_state": {"enum": ["open", "expired"]},
+    "risk_score": {"type": "integer", "minimum": 0, "maximum": 100},
+    "confidence": {"enum": ["low", "medium", "high"]}
+  }
+}

@@ -1,0 +1,1 @@
+{"ca_file":"C:/Operator/PKI/ca.pem","identity_pfx":"C:/Operator/PKI/agent.pfx","credential_target":"IRForge.Agent.PFX","collector_url":"https://collector.operator.example:8443","server_fingerprint":"REPLACE_WITH_64_HEX_SHA256"}
