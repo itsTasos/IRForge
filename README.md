@@ -1,8 +1,6 @@
 # IRForge — Windows endpoint evidence and investigation
 
-**IR** means **Incident Response**. **Forge** means a workshop: a place to bring evidence together and turn it into an investigation.
-
-IRForge 1.0.0-dev is a C++20 Windows 10/11 x64 preview with native collectors, durable SQLite evidence, a separate Qt desktop UI and optional authenticated multi-host collection. It observes and explains activity; it never executes remote commands, uploads files or remediates a host.
+IRForge is a C++20 Windows 10/11 x64 preview with native collectors, durable SQLite evidence, a separate Qt desktop UI and optional authenticated multi-host collection. It observes and explains activity; it never executes remote commands, uploads files or remediates a host.
 
 ## Capabilities
 
