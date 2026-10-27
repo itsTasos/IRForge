@@ -462,13 +462,17 @@ void PipeServer::stop() noexcept {
         impl_->worker.join();
     }
 }
-Json pipeRequest(const std::string &name, const Json &request, int timeout) {
+Json pipeRequest(const std::string &name, const Json &request, int timeout, int connectTimeout) {
     validatePipeName(name);
     validateDocument(request);
     if (timeout < 100 || timeout > 30000)
         throw std::runtime_error("invalid IPC timeout");
+    if (connectTimeout == -1)
+        connectTimeout = timeout;
+    if (connectTimeout < 100 || connectTimeout > 30000)
+        throw std::runtime_error("invalid IPC connection timeout");
     auto path = L"\\\\.\\pipe\\" + utf16(name);
-    auto deadline = GetTickCount64() + static_cast<ULONGLONG>(timeout);
+    auto deadline = GetTickCount64() + static_cast<ULONGLONG>(connectTimeout);
     while (!WaitNamedPipeW(path.c_str(), 50)) {
         auto error = GetLastError();
         if ((error != ERROR_FILE_NOT_FOUND && error != ERROR_SEM_TIMEOUT && error != ERROR_PIPE_BUSY) ||
@@ -507,7 +511,7 @@ PipeServer::PipeServer(const std::string &, OperationGateway &, const std::vecto
 PipeServer::~PipeServer() = default;
 void PipeServer::start() {}
 void PipeServer::stop() noexcept {}
-Json pipeRequest(const std::string &, const Json &, int) {
+Json pipeRequest(const std::string &, const Json &, int, int) {
     throw std::runtime_error("Windows pipe required");
 }
 #endif

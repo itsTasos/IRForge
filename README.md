@@ -37,6 +37,8 @@ cmake --build --preset release --parallel 4
 
 ## Run and investigate
 
+Launch `build/mingw/IRForgeUI.exe` and choose **Monitoring setup and control** to load and edit a configuration, select rules and a results folder, and start or stop a timed session. **Open saved recording** connects a previously saved SQLite database for review. The Collection tab covers the common collectors and explicit file roots; Advanced JSON exposes the remaining supported configuration fields. Configuration is validated before it is saved and used. Start the GUI as administrator when elevated sources such as ETW are required; check **Settings and Health** for actual source coverage. The GUI records all configured host activity, not only a selected program. The resulting session folder is shown in the control panel. The terminal workflows below remain available.
+
 ```powershell
 ./build/mingw/irforge.exe version
 ./build/mingw/irforge.exe rules validate --dir rules/internal
@@ -52,7 +54,7 @@ To inspect a stopped recording:
 # Launch IRForgeUI.exe in a second terminal.
 ```
 
-One logical owner opens a database. Use a different `--pipe NAME` for independent sessions. The GUI stays non-elevated; analyst writes require a user-clicked Windows UAC prompt. It offers search, filtering, paging, processes, network, persistence, artifacts, rules, baselines, hosts/cases, intelligence, health and incident timelines/graphs.
+One logical owner opens a database. Use a different `--pipe NAME` for independent sessions. When the GUI is non-elevated, analyst writes require a user-clicked Windows UAC prompt; a GUI-started monitor inherits the GUI's privileges. It offers search, filtering, paging, processes, network, persistence, artifacts, rules, baselines, hosts/cases, intelligence, health and incident timelines/graphs.
 
 Results are written to `--output`: `events.jsonl`, compatible `alerts.jsonl`, `monitor-health.json`, `session-metadata.json` and `irforge.sqlite`. SQLite preserves revisions, analyst states, notes, cases and historical evidence.
 

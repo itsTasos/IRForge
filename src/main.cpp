@@ -306,6 +306,11 @@ int run(int argc, char **argv) {
     throw std::runtime_error("live monitoring requires Windows; replay and rules validation are portable");
 #else
     SetConsoleCtrlHandler(consoleHandler, TRUE);
+    // A GUI-started monitor uses a per-session local event for graceful shutdown.
+    wchar_t guiStopName[256]{};
+    const auto guiStopLength = GetEnvironmentVariableW(L"IRFORGE_STOP_EVENT", guiStopName, 256);
+    Handle guiStop(guiStopLength > 0 && guiStopLength < 256 ? OpenEventW(SYNCHRONIZE, FALSE, guiStopName)
+                                                            : nullptr);
     EventBus bus(config.queue_capacity);
     std::unique_ptr<TiEnricher> tiEnricher;
     if (config.threat_intel_enabled ||
@@ -519,7 +524,8 @@ int run(int argc, char **argv) {
         ++index;
     }
     auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(duration);
-    while (!stopRequested && (duration == 0 || std::chrono::steady_clock::now() < deadline))
+    while (!stopRequested && (duration == 0 || std::chrono::steady_clock::now() < deadline) &&
+           (!guiStop.value || WaitForSingleObject(guiStop.value, 0) != WAIT_OBJECT_0))
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     for (auto &monitor : monitors)
         monitor->stop();

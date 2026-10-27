@@ -6,6 +6,7 @@
 #include "irforge/detection/YaraScanner.hpp"
 #include "irforge/enrichment/HashEngine.hpp"
 #include "irforge/ipc/PipeServer.hpp"
+#include "irforge/monitoring/Win32.hpp"
 #include "irforge/replay/ReplayEngine.hpp"
 #include "irforge/reporting/Evidence.hpp"
 #include "irforge/reporting/ReportExporter.hpp"
@@ -335,7 +336,13 @@ std::optional<int> platformCommand(const std::vector<std::string> &args) {
             std::cout << "Serving real stored evidence over authenticated local pipe for " << duration
                       << " seconds\n";
             auto end = std::chrono::steady_clock::now() + std::chrono::seconds(duration);
-            while (std::chrono::steady_clock::now() < end)
+            wchar_t guiStopName[256]{};
+            const auto guiStopLength = GetEnvironmentVariableW(L"IRFORGE_STOP_EVENT", guiStopName, 256);
+            Handle guiStop(guiStopLength > 0 && guiStopLength < 256
+                               ? OpenEventW(SYNCHRONIZE, FALSE, guiStopName)
+                               : nullptr);
+            while (std::chrono::steady_clock::now() < end &&
+                   (!guiStop.value || WaitForSingleObject(guiStop.value, 0) != WAIT_OBJECT_0))
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             server.stop();
             return 0;

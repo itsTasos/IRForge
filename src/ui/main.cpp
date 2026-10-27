@@ -1,3 +1,4 @@
+#include "ControlPanel.hpp"
 #include "MainWindow.hpp"
 #include "irforge/ipc/PipeServer.hpp"
 #include "irforge/reporting/Evidence.hpp"
@@ -74,6 +75,8 @@ int main(int argc, char **argv) {
             if (box->text() == "Dark theme")
                 box->setChecked(true);
     window.show();
+    if (args.contains("--control-panel"))
+        window.openControlPanel();
     QElapsedTimer elapsed;
     elapsed.start();
     auto screenshot = option("--screenshot", "");
@@ -92,6 +95,8 @@ int main(int argc, char **argv) {
             [&app, &window, timer, attempts, screenshot, &elapsed, option, incident] {
                 bool ready =
                     incident.isEmpty() ? window.loaded() : window.property("incident_ready").toBool();
+                if (app.arguments().contains("--control-panel"))
+                    ready = window.findChild<QDialog *>("monitoringControlPanel") != nullptr;
                 auto expected = option("--expect-path", "");
                 if (app.arguments().contains("--expect-request-failure"))
                     ready = window.property("request_failed").toBool();
@@ -99,7 +104,10 @@ int main(int argc, char **argv) {
                     ready = ready &&
                             window.visibleRows().dump().find(expected.toStdString()) != std::string::npos;
                 if (ready) {
-                    auto *target = QApplication::activeModalWidget();
+                    auto *target =
+                        app.arguments().contains("--control-panel")
+                            ? static_cast<QWidget *>(window.findChild<QDialog *>("monitoringControlPanel"))
+                            : QApplication::activeModalWidget();
                     bool ok = (target ? target->grab() : window.grab()).save(screenshot);
                     auto measure = option("--measurement", "");
                     if (!measure.isEmpty())

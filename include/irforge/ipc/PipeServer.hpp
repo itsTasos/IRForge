@@ -38,7 +38,7 @@ class PipeServer {
     void start();
     void stop() noexcept;
 };
-Json pipeRequest(const std::string &name, const Json &, int timeoutMs = 5000);
+Json pipeRequest(const std::string &name, const Json &, int timeoutMs = 5000, int connectTimeoutMs = -1);
 std::string currentUserSid();
 void validatePipeName(const std::string &);
 } // namespace irforge

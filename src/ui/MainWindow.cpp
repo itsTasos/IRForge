@@ -1,4 +1,5 @@
 #include "MainWindow.hpp"
+#include "ControlPanel.hpp"
 #include "irforge/enrichment/HashEngine.hpp"
 #include "irforge/ipc/PipeServer.hpp"
 #include "irforge/monitoring/Win32.hpp"
@@ -6,6 +7,7 @@
 #include "irforge/reporting/ReportExporter.hpp"
 #include <QApplication>
 #include <QCheckBox>
+#include <QCloseEvent>
 #include <QComboBox>
 #include <QDateTime>
 #include <QDialog>
@@ -128,20 +130,38 @@ MainWindow::MainWindow(std::string pipe) : pipe_(std::move(pipe)) {
     setMinimumSize(980, 640);
     auto *root = new QWidget;
     auto *layout = new QVBoxLayout(root);
-    auto *heading = new QLabel("IRForge  |  Evidence-led endpoint triage");
-    heading->setStyleSheet("font-size:24px;font-weight:600;color:#147b86;padding:12px");
-    layout->addWidget(heading);
-    auto *notice = new QLabel("Scores prioritize review. Provider coverage, uncertainty and mapped "
-                              "techniques remain visible. Read-only access is the default.");
-    notice->setWordWrap(true);
-    layout->addWidget(notice);
+    layout->setContentsMargins(20, 16, 20, 16);
+    layout->setSpacing(12);
+    auto *header = new QHBoxLayout;
+    auto *brand = new QVBoxLayout;
+    auto *heading = new QLabel("IRForge");
+    heading->setObjectName("brandTitle");
+    auto *notice = new QLabel("ENDPOINT EVIDENCE  /  INVESTIGATION CONSOLE");
+    notice->setObjectName("brandSubtitle");
+    brand->addWidget(heading);
+    brand->addWidget(notice);
+    brand->setSpacing(2);
+    header->addLayout(brand);
+    header->addStretch();
+    auto *control = new QPushButton("Monitoring setup and control");
+    control->setObjectName("primaryAction");
+    header->addWidget(control);
+    layout->addLayout(header);
+    connect(control, &QPushButton::clicked, this, [this] { openControlPanel(); });
     auto *split = new QSplitter;
     navigation_ = new QListWidget;
+    navigation_->setObjectName("navigation");
     navigation_->addItems(pages);
+    navigation_->setMinimumWidth(200);
     navigation_->setMaximumWidth(230);
     split->addWidget(navigation_);
     auto *content = new QWidget;
     auto *body = new QVBoxLayout(content);
+    body->setContentsMargins(16, 0, 0, 0);
+    body->setSpacing(10);
+    auto *pageTitle = new QLabel("Overview");
+    pageTitle->setObjectName("pageTitle");
+    body->addWidget(pageTitle);
     summary_ = new QLabel("Connecting to local agent…");
     summary_->setWordWrap(true);
     summary_->setTextFormat(Qt::PlainText);
@@ -186,10 +206,13 @@ MainWindow::MainWindow(std::string pipe) : pipe_(std::move(pipe)) {
     eventFilters->addWidget(loadQuery);
     eventFilters->addWidget(exportRows);
     body->addLayout(eventFilters);
-    auto *configure = new QPushButton("Collection, privacy and retention (next start)");
-    body->addWidget(configure);
-    auto *lookup = new QPushButton("Opt-in reputation lookup (hash / public IP)");
-    body->addWidget(lookup);
+    auto *actions = new QHBoxLayout;
+    auto *configure = new QPushButton("Agent settings");
+    auto *lookup = new QPushButton("Reputation lookup");
+    actions->addWidget(configure);
+    actions->addWidget(lookup);
+    actions->addStretch();
+    body->addLayout(actions);
     connect(lookup, &QPushButton::clicked, this, [this] {
         bool ok = false;
         auto kind = QInputDialog::getItem(this, "Reputation lookup", "Indicator type", {"sha256", "ip"}, 0,
@@ -296,20 +319,48 @@ MainWindow::MainWindow(std::string pipe) : pipe_(std::move(pipe)) {
         localTime_ = enabled;
         refresh();
     });
-    connect(theme, &QCheckBox::toggled, this, [this](bool dark) {
-        setStyleSheet(dark ? "QWidget{background:#182632;color:#e5edf2} "
-                             "QTableWidget{alternate-background-color:#1d303e} "
-                             "QLineEdit,QComboBox,QTableWidget{background:#233846;color:#e5edf2} "
-                             "QHeaderView::section{background:#325566;color:#ffffff} "
-                             "QPushButton{background:#325566;padding:7px;color:white} "
-                             "QListWidget::item:selected{background:#247c89;color:white}"
-                           : "QWidget{background:#f4f8fa;color:#183044} "
-                             "QTableWidget{alternate-background-color:#edf4f6} "
-                             "QLineEdit,QComboBox,QTableWidget{background:white;color:#183044} "
-                             "QHeaderView::section{background:#d8e8eb;color:#183044} "
-                             "QPushButton{padding:7px;background:#e3f0f2} "
-                             "QListWidget::item:selected{background:#147b86;color:white}");
+    connect(theme, &QCheckBox::toggled, this, [](bool dark) {
+        qApp->setStyleSheet(dark ? R"(
+            QWidget { background:#101822; color:#d8e4eb; font-family:'Segoe UI'; font-size:13px; }
+            QLabel { background:transparent; }
+            QLabel#brandTitle { color:#e9f4f4; font-size:26px; font-weight:700; }
+            QLabel#brandSubtitle { color:#8ba6b5; font-size:10px; font-weight:600; }
+            QLabel#pageTitle { color:#edf5f7; font-size:23px; font-weight:650; }
+            QListWidget#navigation { background:#151f2a; border:1px solid #263747; border-radius:8px; padding:6px; outline:0; }
+            QListWidget#navigation::item { color:#abc0ca; padding:9px 12px; border-radius:4px; }
+            QListWidget#navigation::item:hover { background:#1e303d; color:#edf6f6; }
+            QListWidget#navigation::item:selected { background:#1d4248; color:#9ceee0; }
+            QPushButton { background:#202f3b; color:#d7e8ec; border:1px solid #344a58; border-radius:5px; padding:8px 12px; }
+            QPushButton:hover { background:#2a414c; border-color:#5b8d92; }
+            QPushButton:pressed { background:#173c42; }
+            QPushButton:disabled { background:#19242d; color:#6d818c; border-color:#283945; }
+            QPushButton#primaryAction { background:#16796f; color:#ffffff; border:1px solid #238e81; font-weight:600; padding:10px 18px; }
+            QPushButton#primaryAction:hover { background:#218d80; }
+            QLineEdit, QComboBox, QSpinBox, QPlainTextEdit, QTextEdit, QTextBrowser { background:#182632; color:#e2edf0; border:1px solid #344a58; border-radius:4px; padding:7px; selection-background-color:#277b78; }
+            QLineEdit:focus, QComboBox:focus, QPlainTextEdit:focus, QTextEdit:focus { border:1px solid #65cabb; }
+            QTableWidget { background:#141f29; alternate-background-color:#192732; border:1px solid #2b3c49; gridline-color:#273945; selection-background-color:#24535a; selection-color:white; }
+            QTableWidget::item { padding:5px; }
+            QHeaderView::section { background:#21323e; color:#b9cfd5; border:0; border-bottom:1px solid #354c58; padding:8px; font-weight:600; }
+            QTabWidget::pane { border:1px solid #344a58; }
+            QTabBar::tab { background:#182632; padding:9px 16px; color:#a9c0ca; }
+            QTabBar::tab:selected { background:#27434b; color:#a4eee0; }
+            QCheckBox { spacing:7px; } QCheckBox::indicator { width:15px; height:15px; }
+            QSplitter::handle { background:#233642; }
+            QScrollBar:vertical { background:#17232d; width:10px; } QScrollBar::handle:vertical { background:#405864; min-height:24px; border-radius:4px; }
+        )"
+                                 : R"(
+            QWidget { background:#f3f7f8; color:#203640; font-family:'Segoe UI'; font-size:13px; }
+            QLabel { background:transparent; } QLabel#brandTitle { font-size:26px; font-weight:700; color:#145f60; }
+            QLabel#brandSubtitle { color:#526d77; font-size:10px; } QLabel#pageTitle { font-size:23px; font-weight:650; }
+            QListWidget#navigation { background:#e5eff0; border:1px solid #c3d7db; padding:6px; }
+            QListWidget#navigation::item { padding:9px 12px; } QListWidget#navigation::item:selected { background:#176d6b; color:white; }
+            QPushButton { background:#e1edef; border:1px solid #b3cbd0; border-radius:5px; padding:8px 12px; }
+            QPushButton:hover { background:#cfe3e4; } QPushButton#primaryAction { background:#147c73; color:white; font-weight:600; }
+            QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextEdit,QTextBrowser,QTableWidget { background:white; color:#203640; border:1px solid #c0d4d8; padding:6px; }
+            QHeaderView::section { background:#d9e8e9; color:#203640; padding:8px; border:0; }
+        )");
     });
+    theme->setChecked(true);
     auto *findShortcut = new QShortcut(QKeySequence::Find, this);
     connect(findShortcut, &QShortcut::activated, search_, qOverload<>(&QWidget::setFocus));
     auto *refreshShortcut = new QShortcut(QKeySequence::Refresh, this);
@@ -401,14 +452,11 @@ MainWindow::MainWindow(std::string pipe) : pipe_(std::move(pipe)) {
     split->setStretchFactor(1, 1);
     layout->addWidget(split, 1);
     setCentralWidget(root);
-    setStyleSheet("QMainWindow{background:#f4f8fa} QTableWidget{background:white;gridline-color:#dce5e9} "
-                  "QWidget{color:#183044} QHeaderView::section{background:#d8e8eb;color:#183044;padding:6px} "
-                  "QTableWidget::item{color:#183044} "
-                  "QPushButton{padding:7px 12px;background:#e3f0f2;border:1px solid #b4ccd2} "
-                  "QLineEdit,QComboBox{padding:6px;background:white} "
-                  "QListWidget{font-size:14px;padding:8px} QListWidget::item{padding:10px} "
-                  "QListWidget::item:selected{background:#147b86;color:white}");
-    connect(navigation_, &QListWidget::currentRowChanged, this, [this] {
+    connect(navigation_, &QListWidget::currentRowChanged, this, [this, pageTitle](int page) {
+        if (page >= 0 && page < pages.size())
+            pageTitle->setText(pages[page]);
+        rows_ = Json::array();
+        table_->setRowCount(0);
         offset_ = 0;
         refresh();
     });
@@ -439,14 +487,46 @@ MainWindow::MainWindow(std::string pipe) : pipe_(std::move(pipe)) {
     });
     timer->start();
 }
+void MainWindow::openControlPanel() {
+    if (!controlPanel_) {
+        controlPanel_ = new ControlPanel(pipe_, this);
+        controlPanel_->setAttribute(Qt::WA_DeleteOnClose);
+        connect(controlPanel_, &QObject::destroyed, this, [this] { controlPanel_ = nullptr; });
+    }
+    controlPanel_->show();
+    controlPanel_->raise();
+    controlPanel_->activateWindow();
+}
+void MainWindow::closeEvent(QCloseEvent *event) {
+    auto *control = dynamic_cast<ControlPanel *>(controlPanel_);
+    if (control && control->monitoring()) {
+        QMessageBox::information(this, "Monitoring is active",
+                                 "Stop the session and wait for it to finish before closing IRForge.");
+        control->show();
+        event->ignore();
+        return;
+    }
+    event->accept();
+}
 void MainWindow::async(const std::function<Json()> &operation,
-                       const std::function<void(const Json &)> &complete) {
+                       const std::function<void(const Json &)> &complete, int generation) {
     auto *watcher = new QFutureWatcher<Json>(this);
-    connect(watcher, &QFutureWatcher<Json>::finished, this, [this, watcher, complete] {
+    connect(watcher, &QFutureWatcher<Json>::finished, this, [this, watcher, complete, generation] {
         auto result = watcher->result();
         watcher->deleteLater();
+        if (generation >= 0) {
+            refreshInFlight_ = false;
+            if (refreshPending_) {
+                refreshPending_ = false;
+                QTimer::singleShot(0, this, [this] { refresh(); });
+            }
+            if (generation != generation_)
+                return;
+        }
         if (result.contains("ui_error")) {
-            summary_->setText("Agent request failed: " + q(result["ui_error"].get<std::string>()));
+            summary_->setText("Agent unavailable or request failed. Start a session from Monitoring setup, "
+                              "then refresh. " +
+                              q(result["ui_error"].get<std::string>()));
             setProperty("loaded", false);
             setProperty("request_failed", true);
             rows_.clear();
@@ -477,6 +557,11 @@ void MainWindow::refresh() {
     summary_->setText("Reading stored evidence from the authenticated local agent…");
     previous_->setEnabled(offset_ > 0);
     next_->setEnabled(false);
+    if (refreshInFlight_) {
+        refreshPending_ = true;
+        return;
+    }
+    refreshInFlight_ = true;
     auto pipe = pipe_;
     Json filters = Json::object();
     if (!search_->text().isEmpty())
@@ -521,26 +606,29 @@ void MainWindow::refresh() {
                                       {"offset", offset_}};
     async(
         [pipe, request, page] {
-            auto result = pipeRequest(pipe, request);
+            constexpr int timeout = 5000, connectTimeout = 1000;
+            auto result = pipeRequest(pipe, request, timeout, connectTimeout);
             if (page == 0) {
                 Json counts = Json::object();
                 for (const auto *table : {"events", "incidents", "processes", "artifacts"})
-                    counts[table] =
-                        pipeRequest(pipe, {{"op", "query"}, {"table", table}, {"limit", 1}})["total"];
+                    counts[table] = result.value(table, 0);
                 result["counts"] = counts;
                 result["sessions"] =
-                    pipeRequest(pipe, {{"op", "query"}, {"table", "sessions"}, {"limit", 10}})["rows"];
+                    pipeRequest(pipe, {{"op", "query"}, {"table", "sessions"}, {"limit", 10}}, timeout,
+                                connectTimeout)["rows"];
             }
             if (page == 7)
-                result["cases"] =
-                    pipeRequest(pipe, {{"op", "query"}, {"table", "cases"}, {"limit", 50}})["rows"];
+                result["cases"] = pipeRequest(pipe, {{"op", "query"}, {"table", "cases"}, {"limit", 50}},
+                                              timeout, connectTimeout)["rows"];
             if (page == 9)
-                result["health"] = pipeRequest(pipe, {{"op", "health"}});
+                result["health"] = pipeRequest(pipe, {{"op", "health"}}, timeout, connectTimeout);
             if (page == 9)
-                result["jobs"] = pipeRequest(pipe, {{"op", "query"},
-                                                    {"table", "health"},
-                                                    {"filters", {{"search", "job_id"}}},
-                                                    {"limit", 50}})["rows"];
+                result["jobs"] = pipeRequest(pipe,
+                                             {{"op", "query"},
+                                              {"table", "health"},
+                                              {"filters", {{"search", "job_id"}}},
+                                              {"limit", 50}},
+                                             timeout, connectTimeout)["rows"];
             return result;
         },
         [this, generation, page](const Json &result) {
@@ -668,7 +756,8 @@ void MainWindow::refresh() {
                         row.value("host_id", std::string{}) == "replay")
                         summary_->setText("OFFLINE REPLAY — synthetic fixture results; these scores do not "
                                           "describe this Windows host.");
-        });
+        },
+        generation);
 }
 void MainWindow::detail(int row) {
     if (row >= 0 && table_->item(row, 0))
