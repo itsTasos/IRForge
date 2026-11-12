@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IRForge Console</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 4 7v8c0 7 5 13 12 15 7-2 12-8 12-15V7z' fill='%2300e5a8'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/style.css">
+</head><body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><svg viewBox="0 0 32 32" width="28" height="28"><path d="M16 2 4 7v8c0 7 5 13 12 15 7-2 12-8 12-15V7z" fill="none" stroke="var(--accent)" stroke-width="2"/><path d="M10 16l4 4 8-9" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><b>IRForge</b><small>Endpoint Console</small></div></div>
+    <nav id="nav">
+      <a data-p="overview" class="on"><i>◈</i>Overview</a>
+      <a data-p="incidents"><i>⚑</i>Incidents<span class="pill" id="navInc"></span></a>
+      <a data-p="events"><i>≣</i>Events</a>
+      <a data-p="processes"><i>⌬</i>Processes</a>
+      <a data-p="network"><i>⇄</i>Network</a>
+      <a data-p="health"><i>♥</i>Sensors &amp; Health</a>
+    </nav>
+    <div class="sidefoot">
+      <div class="envrow"><span class="dot" id="exeDot"></span><span id="exeTxt">locating engine…</span></div>
+      <div class="envrow"><span class="dot" id="admDot"></span><span id="admTxt"></span></div>
+      <div class="muted tiny">Local only · 127.0.0.1<br>Read-only observation</div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="top">
+      <div class="sess"><label>SESSION</label><select id="sessSel"></select></div>
+      <div class="grow"></div>
+      <div id="runChip" class="chip hidden"></div>
+      <button class="btn primary" id="runBtn">▶ New scan</button>
+    </header>
+    <section id="view"></section>
+  </main>
+</div>
+
+<div id="modal" class="modal hidden"><div class="card dlg">
+  <h3>Run IRForge</h3>
+  <p class="muted">Launches <code>irforge.exe</code> on this PC and loads the session when finished. Output goes to <code>out/web-*</code>.</p>
+  <div class="seg" id="modeSeg"><button data-m="monitor" class="on">Live monitor</button><button data-m="replay">Replay demo</button></div>
+  <div id="liveOpts">
+    <label>Duration <b id="durVal">30</b>s</label>
+    <input type="range" id="dur" min="10" max="300" step="5" value="30">
+    <div class="note" id="admNote"></div>
+  </div>
+  <div id="replayOpts" class="hidden"><label>Fixture</label><select id="fixSel"></select>
+    <p class="muted tiny">Replays a recorded event chain through the detection engine — safe, no live collection.</p></div>
+  <label>Rule pack</label>
+  <select id="ruleSel"><option value="internal">Expanded pack (37 rules, ATT&amp;CK mapped)</option><option value="legacy">Original 8-rule set</option></select>
+  <div class="row end"><button class="btn" id="cancelRun">Cancel</button><button class="btn primary" id="goRun">Start</button></div>
+</div></div>
+
+<div id="drawer" class="drawer hidden"><div class="dhead"><b id="dTitle"></b><button class="btn ghost" id="dClose">✕</button></div><div id="dBody" class="dbody"></div></div>
+<script src="/app.js"></script>
+</body></html>
